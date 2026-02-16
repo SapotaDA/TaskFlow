@@ -3,25 +3,15 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (options) => {
     // Create a transporter
     const transporterConfig = {
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: process.env.EMAIL_PORT || 587,
-        secure: process.env.EMAIL_SECURE === 'true',
+        service: 'gmail',
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS?.replace(/\s/g, ''), // Remove spaces automatically
+            pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
+        tls: {
+            rejectUnauthorized: false // Helps with connection stability on Render
+        }
     };
-
-    // Auto-detect Gmail service
-    if (process.env.EMAIL_HOST?.includes('gmail') || process.env.EMAIL_USER?.endsWith('@gmail.com')) {
-        delete transporterConfig.host;
-        delete transporterConfig.port;
-        delete transporterConfig.secure;
-        transporterConfig.service = 'gmail';
-    }
 
     const transporter = nodemailer.createTransport(transporterConfig);
 

@@ -339,8 +339,8 @@ router.put('/me', auth, [
         } catch (err) {
           console.error('Email change OTP failed:', err.message);
           return res.status(500).json({
-            message: 'Authentication Failure: Could not connect to mail server.',
-            error: 'GMAIL_AUTH_FAILED: You likely need to generate an "App Password" in your Google Security settings and update EMAIL_PASS on Render.'
+            message: 'Email Configuration Error',
+            error: `SMTP_DIAGNOSTIC: ${err.message}. (User: ${process.env.EMAIL_USER})`
           });
         }
       }
