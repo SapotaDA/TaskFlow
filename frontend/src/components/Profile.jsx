@@ -105,7 +105,8 @@ const Profile = () => {
     } catch (err) {
       console.error('Update Profile Error Details:', err);
       // Show more specific error if available
-      const errorMessage = err?.response?.data?.message || err.message || 'Update failed: Authorization rejected.';
+      const backendError = err?.response?.data?.error;
+      const errorMessage = backendError ? `Sequence Error: ${backendError}` : (err?.response?.data?.message || err.message || 'Update failed: Authorization rejected.');
       setError(errorMessage);
     } finally {
       setLoading(false);
