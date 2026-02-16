@@ -339,8 +339,8 @@ router.put('/me', auth, [
         } catch (err) {
           console.error('Email change OTP failed:', err.message);
           return res.status(500).json({
-            message: 'Failed to send verification email. Please check your email settings on Render.',
-            error: err.message
+            message: 'Authentication Failure: Could not connect to mail server.',
+            error: 'GMAIL_AUTH_FAILED: You likely need to generate an "App Password" in your Google Security settings and update EMAIL_PASS on Render.'
           });
         }
       }
