@@ -3,17 +3,17 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (options) => {
     // Create a transporter
     const transporterConfig = {
-        host: process.env.EMAIL_HOST,
+        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: process.env.EMAIL_PORT || 587,
-        secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for 587
+        secure: process.env.EMAIL_SECURE === 'true',
         auth: {
             user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
+            pass: process.env.EMAIL_PASS?.replace(/\s/g, ''), // Remove spaces automatically
         },
     };
 
-    // If using Gmail, it's often more reliable to use the 'service' property
-    if (process.env.EMAIL_HOST?.includes('gmail')) {
+    // Auto-detect Gmail service
+    if (process.env.EMAIL_HOST?.includes('gmail') || process.env.EMAIL_USER?.endsWith('@gmail.com')) {
         delete transporterConfig.host;
         delete transporterConfig.port;
         delete transporterConfig.secure;
