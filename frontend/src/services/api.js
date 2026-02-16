@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 5000, // 5 seconds timeout
+  timeout: 15000, // Increased to 15 seconds for email operations
 });
 
 // Add token to requests if available
