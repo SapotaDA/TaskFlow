@@ -69,8 +69,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '5mb' })); // Increased for profile picture uploads
-app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(express.json({ limit: '10mb' })); // Increased for profile picture base64 overhead
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Apply sanitization middleware
 app.use(sanitize);
@@ -116,7 +116,7 @@ const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('--- DEPLOYMENT: V1.5 (Profile Pic + Email Fixes) ---');
+  console.log('--- DEPLOYMENT: V1.6 (Large Payload Sanitization Fix) ---');
 });
 
 server.on('error', (err) => {
