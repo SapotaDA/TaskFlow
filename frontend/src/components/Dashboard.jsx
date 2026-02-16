@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo, useCallback, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // Cache Buster: V1.7.1
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
