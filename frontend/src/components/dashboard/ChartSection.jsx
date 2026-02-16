@@ -55,9 +55,9 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                     </select>
                 </div>
 
-                <div className="h-[280px] w-full mt-4 relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={stats.activity || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <div className="h-[240px] sm:h-[280px] w-full mt-4 relative min-w-0">
+                    <ResponsiveContainer width="99%" height="100%">
+                        <AreaChart data={stats.activity || []} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
@@ -105,15 +105,15 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                         </div>
                     </div>
                 </div>
-                <div className="h-[200px] w-full relative mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[180px] sm:h-[200px] w-full relative mt-4 min-w-0">
+                    <ResponsiveContainer width="99%" height="100%">
                         <PieChart>
                             <Pie
                                 data={pieData}
                                 cx="50%"
                                 cy="50%"
-                                innerRadius={55}
-                                outerRadius={70}
+                                innerRadius={50}
+                                outerRadius={65}
                                 paddingAngle={6}
                                 dataKey="value"
                                 stroke="none"
@@ -127,8 +127,8 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                         </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-2xl font-bold text-white tracking-tight">{stats.total}</span>
-                        <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">Total</span>
+                        <span className="text-xl sm:text-2xl font-bold text-white tracking-tight">{stats.total}</span>
+                        <span className="text-[8px] sm:text-[9px] font-bold text-white/20 uppercase tracking-widest">Total</span>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 mt-8">

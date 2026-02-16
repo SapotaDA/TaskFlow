@@ -190,7 +190,7 @@ const Profile = () => {
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Return to Dashboard
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Return to Dashboard</span>
           </button>
         </div>
       </nav>

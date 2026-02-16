@@ -46,23 +46,23 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={toast}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed top-4 right-4 left-4 sm:left-auto z-[300] flex flex-col gap-3 items-center sm:items-end pointer-events-none">
         <AnimatePresence>
           {toasts.map((t) => {
             const Icon = toastIcons[t.type];
             return (
               <motion.div
                 key={t.id}
-                initial={{ opacity: 0, x: 100, scale: 0.9 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 100, scale: 0.9 }}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl border backdrop-blur-xl shadow-xl min-w-[300px] max-w-md ${toastColors[t.type]}`}
+                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border backdrop-blur-2xl shadow-2xl w-full sm:w-auto sm:min-w-[320px] max-w-md pointer-events-auto ${toastColors[t.type]}`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                <p className="flex-1 text-sm font-medium">{t.message}</p>
+                <p className="flex-1 text-[11px] sm:text-sm font-bold uppercase tracking-widest leading-tight">{t.message}</p>
                 <button
                   onClick={() => removeToast(t.id)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>

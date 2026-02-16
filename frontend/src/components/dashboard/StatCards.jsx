@@ -4,7 +4,7 @@ import { Clipboard, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 const StatCard = React.memo(({ title, value, icon: Icon, colorClass }) => {
     return (
         <div
-            className="p-5 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden group hover:bg-white/[0.03] transition-all duration-500 hover:border-white/10"
+            className="p-4 sm:p-5 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden group hover:bg-white/[0.03] transition-all duration-500 hover:border-white/10"
         >
             <div className="flex items-center justify-between relative z-10">
                 <div>

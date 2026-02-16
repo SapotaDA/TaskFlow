@@ -43,14 +43,29 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https://grainy-gradients.vercel.app"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL || "http://localhost:5173"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL, "https://task-flow-chi-nine.vercel.app", "http://localhost:5173"].filter(Boolean),
     },
   },
 }));
 app.use(compression()); // Compress responses
 app.use(morgan('dev')); // Logging
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Frontend URL
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'https://task-flow-chi-nine.vercel.app',
+      'http://localhost:5173'
+    ].filter(Boolean);
+
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
