@@ -191,7 +191,10 @@ router.post('/send-otp-email', passwordResetLimiter, [
       user.otp = null;
       user.otpExpire = null;
       await user.save();
-      res.status(500).json({ message: 'Email service authentication failed', error: err.message });
+      res.status(500).json({
+        message: 'Email Transmission Error',
+        error: `SMTP_DIAGNOSTIC: ${err.message}`
+      });
     }
   } catch (error) {
     console.error('Forgot Password OTP Error:', error.message);

@@ -3,16 +3,11 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (options) => {
     // Create a transporter
     const transporterConfig = {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // Use SSL/TLS
+        service: 'gmail',
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
         tls: {
             rejectUnauthorized: false
         }
