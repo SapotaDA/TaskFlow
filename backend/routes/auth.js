@@ -29,7 +29,10 @@ router.post('/register', authLimiter, [
 
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
+    if (existingUser) {
+      console.log('Registration Failed: User already exists -', email);
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
     const user = new User({ name, email, password });
     await user.save();
@@ -58,7 +61,13 @@ router.post('/login', authLimiter, [
 
   try {
     const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
+    if (!user) {
+      console.log('Login Failed: No user found with email -', email);
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    if (!(await user.comparePassword(password))) {
+      console.log('Login Failed: Incorrect password -', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 

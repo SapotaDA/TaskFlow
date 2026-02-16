@@ -55,8 +55,8 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                     </select>
                 </div>
 
-                <div className="h-[240px] sm:h-[280px] w-full mt-4 relative min-w-0">
-                    <ResponsiveContainer width="99%" height="100%">
+                <div className="h-[280px] w-full mt-4 relative min-h-[280px] overflow-hidden">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <AreaChart data={stats.activity || []} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
@@ -105,8 +105,8 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                         </div>
                     </div>
                 </div>
-                <div className="h-[180px] sm:h-[200px] w-full relative mt-4 min-w-0">
-                    <ResponsiveContainer width="99%" height="100%">
+                <div className="h-[200px] w-full relative mt-4 min-h-[200px] overflow-hidden">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                         <PieChart>
                             <Pie
                                 data={pieData}

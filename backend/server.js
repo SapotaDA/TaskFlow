@@ -51,22 +51,29 @@ app.use(compression()); // Compress responses
 app.use(morgan('dev')); // Logging
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps)
+    if (!origin) return callback(null, true);
+
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       'https://task-flow-chi-nine.vercel.app',
       'http://localhost:5173'
     ].filter(Boolean);
 
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
+    const isAllowed = allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.includes('localhost:');
 
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+    if (isAllowed) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.warn('CORS Blocked for origin:', origin);
+      callback(new Error('CORS Not Allowed'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10kb' })); // Limit body size to prevent DoS

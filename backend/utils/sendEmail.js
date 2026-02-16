@@ -21,7 +21,18 @@ const sendEmail = async (options) => {
     };
 
     // Send the email
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error('Nodemailer Error:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            host: process.env.EMAIL_HOST,
+            user: process.env.EMAIL_USER ? 'Present' : 'Missing'
+        });
+        throw error;
+    }
 };
 
 module.exports = sendEmail;
