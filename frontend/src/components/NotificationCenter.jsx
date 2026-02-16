@@ -88,60 +88,71 @@ const NotificationCenter = () => {
 
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                        className="absolute right-0 mt-4 w-[280px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-[#0c0d10]/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-3xl z-[200] overflow-hidden"
-                    >
-                        <div className="p-5 sm:p-8 pb-3 sm:pb-4 flex items-center justify-between border-b border-white/5">
-                            <div>
-                                <h3 className="text-xl font-bold text-white tracking-tight">Notifications</h3>
-                                <p className="text-xs text-white/40 mt-1 uppercase tracking-widest font-bold">Latest Updates</p>
-                            </div>
-                            <div className="flex gap-2">
-                                {unreadCount > 0 && (
+                    <>
+                        {/* Mobile Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[190] sm:hidden"
+                            onClick={() => setIsOpen(false)}
+                        />
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                            className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-20 sm:top-auto sm:mt-4 sm:w-[380px] bg-[#0c0d10]/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-3xl z-[200] overflow-hidden sm:max-w-none"
+                        >
+                            <div className="p-5 sm:p-8 pb-3 sm:pb-4 flex items-center justify-between border-b border-white/5">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white tracking-tight">Notifications</h3>
+                                    <p className="text-xs text-white/40 mt-1 uppercase tracking-widest font-bold">Latest Updates</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    {unreadCount > 0 && (
+                                        <button
+                                            onClick={markAllAsRead}
+                                            className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
+                                            title="Mark all as read"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                     <button
-                                        onClick={markAllAsRead}
-                                        className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all border border-indigo-500/20"
-                                        title="Mark all as read"
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-all border border-white/10"
                                     >
-                                        <CheckCircle2 className="w-4 h-4" />
+                                        <X className="w-4 h-4" />
                                     </button>
-                                )}
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white transition-all border border-white/10"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="max-h-[400px] sm:max-h-[450px] overflow-y-auto p-3 sm:p-4 custom-scrollbar">
-                            {notifications.length > 0 ? (
-                                <div className="space-y-1">
-                                    {notifications.map((notification) => (
-                                        <NotificationItem
-                                            key={notification._id}
-                                            notification={notification}
-                                            onRead={markAsRead}
-                                            onDelete={deleteNotification}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-20 text-center">
-                                    <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10">
-                                        <BellOff className="w-8 h-8 text-white/10" />
+                            <div className="max-h-[400px] sm:max-h-[450px] overflow-y-auto p-3 sm:p-4 custom-scrollbar">
+                                {notifications.length > 0 ? (
+                                    <div className="space-y-1">
+                                        {notifications.map((notification) => (
+                                            <NotificationItem
+                                                key={notification._id}
+                                                notification={notification}
+                                                onRead={markAsRead}
+                                                onDelete={deleteNotification}
+                                            />
+                                        ))}
                                     </div>
-                                    <h4 className="text-white font-bold">No notifications yet</h4>
-                                    <p className="text-white/20 text-xs mt-1">We'll alert you when tasks need attention.</p>
-                                </div>
-                            )}
-                        </div>
+                                ) : (
+                                    <div className="py-20 text-center">
+                                        <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10">
+                                            <BellOff className="w-8 h-8 text-white/10" />
+                                        </div>
+                                        <h4 className="text-white font-bold">No notifications yet</h4>
+                                        <p className="text-white/20 text-xs mt-1">We'll alert you when tasks need attention.</p>
+                                    </div>
+                                )}
+                            </div>
 
-                    </motion.div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </div>
