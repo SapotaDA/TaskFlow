@@ -474,41 +474,6 @@ router.post('/delete-account', auth, [
   }
 });
 
-router.post('/test-inactivity-email', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user);
-    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const emailHtml = getNotificationTemplate(
-      'System Dormancy Detected',
-      `Operator ${user.name}, your account has been flagged as inactive for over 7 days. <br><br>
-      Consistent activity is required to maintain optimal workflow synchronization. Please access your terminal to refresh your session status.`,
-      `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`,
-      'Reinitialize Session'
-    );
-
-    // Force send regardless of actual status
-    if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
-      console.log('\n=== DEV SIMULATION: INACTIVITY EMAIL ===');
-      console.log(`To: ${user.email}`);
-      console.log('--- Content ---');
-      console.log('Subject: Action Required: Inactivity Alert');
-      console.log('System Dormancy Detected...');
-      console.log('========================================\n');
-      return res.json({ message: 'DEV MODE: Test email logged to server console.' });
-    }
-
-    await sendEmail({
-      email: user.email,
-      subject: 'Action Required: Inactivity Alert',
-      html: emailHtml
-    });
-
-    res.json({ message: 'Test inactivity warning dispatched.' });
-  } catch (error) {
-    console.error('Test Email Error:', error);
-    res.status(500).json({ message: 'Dispatch failed.' });
-  }
-});
 
 module.exports = router;
