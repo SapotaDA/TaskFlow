@@ -32,9 +32,12 @@ const ForgotPassword = () => {
             }, 1800);
 
         } catch (err) {
+            console.error('OTP Transmission Error:', err);
+            const backendError = err.response?.data?.error;
+            const messageText = backendError ? `Transmission Failure: ${backendError}` : (err.response?.data?.message || 'Transmission failure: Verify address.');
             setMessage({
                 type: 'error',
-                text: err.response?.data?.message || 'Transmission failure: Verify address.'
+                text: messageText
             });
         } finally {
             setStatus('idle');
@@ -119,8 +122,8 @@ const ForgotPassword = () => {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`p-3.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider flex items-center gap-3 ${message.type === 'error'
-                                            ? 'bg-red-500/5 border-red-500/10 text-red-500'
-                                            : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
+                                        ? 'bg-red-500/5 border-red-500/10 text-red-500'
+                                        : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
                                         }`}
                                 >
                                     <Command className="w-4 h-4" />
