@@ -116,6 +116,7 @@ const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('--- DEPLOYMENT: V1.2 (Email Timeout Fix Applied) ---');
 });
 
 server.on('error', (err) => {
