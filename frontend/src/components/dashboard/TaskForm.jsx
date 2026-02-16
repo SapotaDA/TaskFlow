@@ -29,7 +29,7 @@ const TaskForm = ({
                         exit={{ opacity: 0, scale: 0.98, y: 10 }}
                         className="relative w-full max-w-xl bg-[#0a0b0e] rounded-2xl border border-white/10 shadow-3xl overflow-hidden max-h-[90vh] flex flex-col"
                     >
-                        <div className="p-8 pb-4 flex justify-between items-start">
+                        <div className="p-6 sm:p-8 pb-3 sm:pb-4 flex justify-between items-start">
                             <div>
                                 <h3 className="text-xl font-bold text-white tracking-tight">
                                     {editingTask ? 'Edit Objective' : 'New Sequence'}
@@ -44,7 +44,7 @@ const TaskForm = ({
                             </button>
                         </div>
 
-                        <div className="p-8 pt-4 overflow-y-auto no-scrollbar">
+                        <div className="p-6 sm:p-8 pt-3 sm:p-4 overflow-y-auto no-scrollbar">
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <Input
                                     label="Title"
