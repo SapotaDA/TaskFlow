@@ -358,7 +358,10 @@ router.put('/me', auth, [
     });
   } catch (error) {
     console.error('Update Profile Error:', error.message);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      message: 'System Transaction Failed',
+      error: `GENERIC_FAULT: ${error.message}`
+    });
   }
 });
 
