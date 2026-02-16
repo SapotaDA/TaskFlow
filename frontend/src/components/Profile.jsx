@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import ConfirmModal from './ui/ConfirmModal';
+import FeedbackCard from './ui/FeedbackCard';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -391,6 +392,8 @@ const Profile = () => {
               )}
             </section>
           </div>
+
+          <FeedbackCard />
         </div>
       </main>
 

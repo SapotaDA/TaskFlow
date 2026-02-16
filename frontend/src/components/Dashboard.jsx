@@ -15,6 +15,7 @@ import TaskForm from './dashboard/TaskForm';
 import Skeleton from './ui/Skeleton';
 import NotificationCenter from './NotificationCenter';
 import ConfirmModal from './ui/ConfirmModal';
+import FeedbackCard from './ui/FeedbackCard';
 
 // Lazy load ChartSection
 const ChartSection = lazy(() => import('./dashboard/ChartSection'));
@@ -297,6 +298,8 @@ const Dashboard = () => {
             />
           </>
         )}
+
+        <FeedbackCard />
       </main>
 
       <TaskForm
