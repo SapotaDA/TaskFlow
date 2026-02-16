@@ -43,7 +43,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https://grainy-gradients.vercel.app"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL, "https://task-flow-chi-nine.vercel.app", "http://localhost:5173"].filter(Boolean),
+      connectSrc: ["'self'", process.env.FRONTEND_URL, "https://task-flow-chi-nine.vercel.app", "https://taskiflow.vercel.app", "http://localhost:5173"].filter(Boolean),
     },
   },
 }));
@@ -51,18 +51,11 @@ app.use(compression()); // Compress responses
 app.use(morgan('dev')); // Logging
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      'https://task-flow-chi-nine.vercel.app',
-      'http://localhost:5173'
-    ].filter(Boolean);
-
-    const isAllowed = allowedOrigins.includes(origin) ||
+    const isAllowed = !origin ||
       origin.endsWith('.vercel.app') ||
-      origin.includes('localhost:');
+      origin.includes('localhost:') ||
+      origin === process.env.FRONTEND_URL ||
+      origin === 'https://taskiflow.vercel.app';
 
     if (isAllowed) {
       callback(null, true);
