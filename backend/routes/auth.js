@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
+const { getNotificationTemplate } = require('../utils/emailTemplates');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
 
 
@@ -103,37 +104,17 @@ router.post('/forgot-password', passwordResetLimiter, [
         return res.json({ message: 'DEV MODE: Reset link logged to server console' });
       }
 
+      const emailHtml = getNotificationTemplate(
+        'Password Reset Protocol',
+        `Hello ${user.name}, we received a request to synchronize your security credentials. Click the button below to initialize the password reset sequence.`,
+        resetUrl,
+        'Reset Password'
+      );
+
       await sendEmail({
         email: user.email,
-        subject: 'Password Reset Request - TaskFlow',
-        message,
-        html: `
-          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0;">
-            <!-- Header -->
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-              <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: bold;">TaskFlow</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Password Reset Request</p>
-            </div>
-            <!-- Content -->
-            <div style="background: #f8f9fa; padding: 40px 20px;">
-              <div style="background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Hello <strong>${user.name}</strong>,</p>
-                <p style="color: #666; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">We received a request to reset your password. Click the button below to set a new password:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 14px 40px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; transition: opacity 0.3s;">Reset Password</a>
-                </div>
-                <p style="color: #999; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eee;">
-                  <strong>Important:</strong> This link will expire in 10 minutes. If you did not request this, please ignore this email.
-                </p>
-              </div>
-            </div>
-            <!-- Footer -->
-            <div style="background: #2d3748; color: #cbd5e0; padding: 20px; text-align: center; font-size: 12px;">
-              <p style="margin: 0 0 8px 0;">© ${new Date().getFullYear()} TaskFlow. All rights reserved.</p>
-              <p style="margin: 0; color: #a0aec0;">This is an automated email, please do not reply.</p>
-            </div>
-          </div>
-        `,
+        subject: 'Security: Password Reset Protocol - TaskFlow',
+        html: emailHtml
       });
       res.json({ message: 'Reset link sent to your email' });
     } catch (err) {
@@ -183,19 +164,17 @@ router.post('/send-otp-email', passwordResetLimiter, [
         return res.json({ message: 'DEV MODE: OTP logged to server console' });
       }
 
+      const emailHtml = getNotificationTemplate(
+        'Verification OTP',
+        `Hello ${user.name}, your TaskFlow security code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>. This code is valid for 10 minutes. Use it to finalize your session validation.`,
+        `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+        'Return to Dashboard'
+      );
+
       await sendEmail({
         email: user.email,
-        subject: 'Password Reset OTP - TaskFlow',
-        message: `Your TaskFlow password reset OTP is: ${otp}. This code will expire in 10 minutes.`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-            <h2>Password Reset OTP</h2>
-            <p>Hello ${user.name},</p>
-            <p>Your OTP for password reset is: <strong style="font-size: 24px; letter-spacing: 4px;">${otp}</strong></p>
-            <p>This code will expire in 10 minutes.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-          </div>
-        `,
+        subject: 'Security: Verification OTP - TaskFlow',
+        html: emailHtml
       });
       res.json({ message: 'OTP sent to your email' });
     } catch (err) {
@@ -354,10 +333,17 @@ router.post('/delete-account-otp', auth, async (req, res) => {
       return res.json({ message: 'DEV MODE: OTP logged to server console' });
     }
 
+    const emailHtml = getNotificationTemplate(
+      'Account Deletion Alert',
+      `Hello ${user.name}, you are attempting to permanently erase your TaskFlow account. Your verification code is: <strong style="color: #ef4444; font-size: 24px;">${otp}</strong>. This action is IRREVERSIBLE.`,
+      `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+      'Abort Deletion'
+    );
+
     await sendEmail({
       email: user.email,
-      subject: 'Account Deletion OTP - TaskFlow',
-      message: `Your TaskFlow account deletion OTP is: ${otp}. This code will expire in 10 minutes.`,
+      subject: 'Urgent: Account Deletion OTP - TaskFlow',
+      html: emailHtml
     });
     return res.json({ message: 'Verification code sent to your email' });
   } catch (error) {

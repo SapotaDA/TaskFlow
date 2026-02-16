@@ -19,6 +19,22 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
+  // Load remembered identity
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('user_identity');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const maskDisplayEmail = (val) => {
+    if (!val) return '';
+    const [name, domain] = val.split('@');
+    if (name.length <= 3) return `***@${domain}`;
+    return `${name.substring(0, 3)}***@${domain}`;
+  };
+
   useEffect(() => {
     const interval = setInterval(() => {
       setMetrics(prev => ({
@@ -38,6 +54,8 @@ const Login = () => {
       await login(email, password);
       if (rememberMe) {
         localStorage.setItem('user_identity', email);
+      } else {
+        localStorage.removeItem('user_identity');
       }
       navigate('/dashboard');
     } catch (err) {
@@ -60,7 +78,7 @@ const Login = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
     }
   };
 

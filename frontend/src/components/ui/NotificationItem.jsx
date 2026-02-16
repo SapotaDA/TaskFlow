@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bell, Clock, Info, CheckCircle, Trash2 } from 'lucide-react';
+import { Bell, Clock, Info, CheckCircle2, Trash2 } from 'lucide-react';
 
 const NotificationItem = ({ notification, onRead, onDelete }) => {
     const getIcon = () => {
@@ -10,7 +10,7 @@ const NotificationItem = ({ notification, onRead, onDelete }) => {
             case 'system':
                 return <Info className="w-4 h-4 text-blue-400" />;
             case 'task':
-                return <CheckCircle className="w-4 h-4 text-emerald-400" />;
+                return <CheckCircle2 className="w-4 h-4 text-emerald-400" />;
             default:
                 return <Bell className="w-4 h-4 text-indigo-400" />;
         }
@@ -23,8 +23,8 @@ const NotificationItem = ({ notification, onRead, onDelete }) => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
             className={`p-4 rounded-2xl border ${notification.read
-                    ? 'bg-white/[0.02] border-white/5 opacity-60'
-                    : 'bg-white/[0.05] border-white/10 shadow-lg'
+                ? 'bg-white/[0.02] border-white/5 opacity-60'
+                : 'bg-white/[0.05] border-white/10 shadow-lg'
                 } hover:bg-white/[0.08] transition-all group relative mb-3`}
         >
             <div className="flex gap-4">

@@ -24,28 +24,28 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
                         exit={{ scale: 0.9, opacity: 0, y: 20 }}
                         className="relative w-full max-w-md bg-[#0a0b0e] rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
                     >
-                        <div className="p-10">
+                        <div className="p-8">
                             <div className="flex flex-col items-center text-center">
-                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-6 border ${type === 'danger'
-                                        ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                                        : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 border ${type === 'danger'
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                                    : 'bg-amber-500/10 border-amber-500/20 text-amber-400'
                                     }`}>
-                                    <AlertTriangle className="w-10 h-10" />
+                                    <AlertTriangle className="w-7 h-7" />
                                 </div>
 
-                                <h3 className="text-2xl font-bold text-white tracking-tight mb-2">{title}</h3>
-                                <p className="text-white/40 leading-relaxed font-medium mb-10">{message}</p>
+                                <h3 className="text-xl font-bold text-white tracking-tight mb-2">{title}</h3>
+                                <p className="text-white/40 leading-relaxed text-sm font-medium mb-8 tabular-nums">{message}</p>
 
-                                <div className="flex w-full gap-4">
+                                <div className="flex w-full gap-3">
                                     <button
                                         onClick={onClose}
-                                        className="flex-1 py-4 rounded-2xl bg-white/5 text-white/60 font-bold border border-white/10 hover:bg-white/10 transition-all"
+                                        className="flex-1 py-3 rounded-xl bg-white/5 text-white/60 text-xs font-black uppercase tracking-widest border border-white/10 hover:bg-white/10 transition-all opacity-80 hover:opacity-100"
                                     >
                                         Cancel
                                     </button>
                                     <Button
                                         onClick={onConfirm}
-                                        className={`flex-1 !py-4 !rounded-2xl !text-lg !font-bold ${type === 'danger' ? '!bg-red-500 !text-white' : '!bg-white !text-black'
+                                        className={`flex-1 !py-3 !rounded-xl !text-xs !font-black !uppercase !tracking-widest ${type === 'danger' ? '!bg-red-500 !text-white' : '!bg-white !text-black'
                                             }`}
                                     >
                                         {confirmText}

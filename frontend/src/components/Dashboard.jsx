@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -24,7 +24,162 @@ import ConfirmModal from './ui/ConfirmModal';
 
 
 
+const StatCard = React.memo(({ title, value, icon: Icon, delay }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.5, duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+      className="p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-3xl relative overflow-hidden group hover:bg-white/[0.04] transition-all duration-300 will-change-transform"
+    >
+      <div className="flex items-center justify-between relative z-10">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2">{title}</p>
+          <p className="text-4xl font-black text-white tracking-tighter tabular-nums">{value}</p>
+        </div>
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all duration-300">
+          <Icon className="w-6 h-6 text-blue-400" />
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
+        <p className="text-white font-bold text-xs uppercase tracking-widest mb-1">{payload[0].name}</p>
+        <p className="text-blue-400 font-black text-lg">{payload[0].value} <span className="text-[10px] text-white/40 font-medium">Tasks</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const ChartSection = React.memo(({ stats, analyticsRange, setAnalyticsRange }) => {
+  if (!stats) return null;
+
+  const pieData = [
+    { name: 'Pending', value: stats.pending, color: '#3b82f6' },
+    { name: 'Active', value: stats.inProgress, color: '#f59e0b' },
+    { name: 'Completed', value: stats.completed, color: '#10b981' },
+  ].filter(d => d.value > 0);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      {/* Activity Chart */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-3xl"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Activity Analysis</h3>
+            <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Submission metrics</p>
+          </div>
+          <select
+            value={analyticsRange}
+            onChange={(e) => setAnalyticsRange(parseInt(e.target.value))}
+            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 focus:outline-none hover:bg-white/10 cursor-pointer transition-all"
+          >
+            <option value="7" className="bg-slate-900">Last 7 Days</option>
+            <option value="30" className="bg-slate-900">Last 30 Days</option>
+            <option value="90" className="bg-slate-900">Last 90 Days</option>
+          </select>
+        </div>
+
+        <div className="h-[300px] w-full mt-4 relative">
+          <ResponsiveContainer width="100%" height={300} minWidth={0} debounce={100}>
+            <AreaChart data={stats.activity || []}>
+              <defs>
+                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 700 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 700 }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#3b82f6"
+                strokeWidth={4}
+                fillOpacity={1}
+                fill="url(#colorCount)"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </motion.div>
+
+      {/* Status Distribution */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-3xl"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Status Distribution</h3>
+            <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Workload balance</p>
+          </div>
+          <div className="p-3 bg-purple-500/10 rounded-2xl">
+            <PieChartIcon className="w-5 h-5 text-purple-400" />
+          </div>
+        </div>
+        <div className="h-[300px] w-full flex items-center justify-center relative">
+          <ResponsiveContainer width="100%" height={300} minWidth={0} debounce={100}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={8}
+                dataKey="value"
+                stroke="none"
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-3xl font-black text-white">{stats.total}</span>
+            <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Total</span>
+          </div>
+        </div>
+        <div className="flex justify-center gap-6 mt-4">
+          {pieData.map((d, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
+              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{d.name}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+});
+
 const Dashboard = () => {
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -39,6 +194,7 @@ const Dashboard = () => {
   const [editingTask, setEditingTask] = useState(null);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [metrics, setMetrics] = useState({ network: 99.1, load: 24 });
 
   const [formData, setFormData] = useState({
@@ -46,11 +202,14 @@ const Dashboard = () => {
     description: '',
     status: 'pending',
     priority: 'medium',
-    dueDate: ''
+    dueDate: '',
   });
+
+  const [viewMode, setViewMode] = useState('grid');
 
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+
 
   const fetchTasks = async () => {
     try {
@@ -109,13 +268,14 @@ const Dashboard = () => {
         description: '',
         status: 'pending',
         priority: 'medium',
-        dueDate: ''
+        dueDate: '',
       });
 
     } catch (error) {
       console.error('Error saving task:', error);
     }
   };
+
 
   const handleEdit = (task) => {
     setEditingTask(task);
@@ -124,7 +284,7 @@ const Dashboard = () => {
       description: task.description,
       status: task.status,
       priority: task.priority || 'medium',
-      dueDate: task.dueDate ? task.dueDate.split('T')[0] : ''
+      dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
     });
 
     setShowForm(true);
@@ -149,171 +309,24 @@ const Dashboard = () => {
 
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || task.status === statusFilter;
-    const matchesPriority = !priorityFilter || task.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const matchesSearch = (task.title + task.description).toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = !statusFilter || task.status === statusFilter;
+      const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [tasks, searchTerm, statusFilter, priorityFilter]);
 
-  const StatCard = ({ title, value, icon: Icon, delay }) => {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.5 }}
-        className="p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-3xl relative overflow-hidden group hover:bg-white/[0.05] transition-all duration-500"
-      >
-        <div className="flex items-center justify-between relative z-10">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2">{title}</p>
-            <p className="text-4xl font-black text-white tracking-tighter tabular-nums">{value}</p>
-          </div>
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:scale-110 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all duration-500">
-            <Icon className="w-6 h-6 text-blue-400" />
-          </div>
-        </div>
-      </motion.div>
-    );
-  };
 
-  const ChartSection = () => {
-    if (!stats) return null;
-
-    const pieData = [
-      { name: 'Pending', value: stats.pending, color: '#3b82f6' },
-      { name: 'Active', value: stats.inProgress, color: '#f59e0b' },
-      { name: 'Completed', value: stats.completed, color: '#10b981' },
-    ].filter(d => d.value > 0);
-
-    const CustomTooltip = ({ active, payload }) => {
-      if (active && payload && payload.length) {
-        return (
-          <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
-            <p className="text-white font-bold text-xs uppercase tracking-widest mb-1">{payload[0].name}</p>
-            <p className="text-blue-400 font-black text-lg">{payload[0].value} <span className="text-[10px] text-white/40 font-medium">Tasks</span></p>
-          </div>
-        );
-      }
-      return null;
-    };
-
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Activity Chart */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-3xl"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Activity Analysis</h3>
-              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Submission metrics</p>
-            </div>
-            <select
-              value={analyticsRange}
-              onChange={(e) => setAnalyticsRange(parseInt(e.target.value))}
-              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 focus:outline-none hover:bg-white/10 cursor-pointer transition-all"
-            >
-              <option value="7" className="bg-slate-900">Last 7 Days</option>
-              <option value="30" className="bg-slate-900">Last 30 Days</option>
-              <option value="90" className="bg-slate-900">Last 90 Days</option>
-            </select>
-          </div>
-
-          <div className="h-[300px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats.activity || []}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 700 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 700 }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#3b82f6"
-                  strokeWidth={4}
-                  fillOpacity={1}
-                  fill="url(#colorCount)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
-        {/* Status Distribution */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-3xl"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Status Distribution</h3>
-              <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Workload balance</p>
-            </div>
-            <div className="p-3 bg-purple-500/10 rounded-2xl">
-              <PieChartIcon className="w-5 h-5 text-purple-400" />
-            </div>
-          </div>
-          <div className="h-[300px] w-full flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={8}
-                  dataKey="value"
-                  stroke="none"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-black text-white">{stats.total}</span>
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Total</span>
-            </div>
-          </div>
-          <div className="flex justify-center gap-6 mt-4">
-            {pieData.map((d, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">{d.name}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    );
-  };
 
 
   return (
@@ -374,6 +387,17 @@ const Dashboard = () => {
         </div>
       </motion.nav>
 
+      {/* Logout Confirmation */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        title="Sign Out"
+        message="Are you sure you want to end your session? You will need to log in again to access your tasks."
+        confirmText="Sign Out"
+        variant="danger"
+      />
+
       <main className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6">
 
         {/* Header */}
@@ -385,11 +409,18 @@ const Dashboard = () => {
           <div className="flex w-full md:w-auto gap-4">
             <div className="flex p-1.5 bg-white/5 rounded-2xl border border-white/10">
               <button
-                onClick={() => setShowAnalytics(false)}
-                className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${!showAnalytics ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
+                onClick={() => { setShowAnalytics(false); setViewMode('grid'); }}
+                className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${!showAnalytics && viewMode === 'grid' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Tasks
+                Grid
+              </button>
+              <button
+                onClick={() => { setShowAnalytics(false); setViewMode('kanban'); }}
+                className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${!showAnalytics && viewMode === 'kanban' ? 'bg-white text-black shadow-lg' : 'text-white/40 hover:text-white'}`}
+              >
+                <Activity className="w-4 h-4" />
+                Kanban
               </button>
               <button
                 onClick={() => setShowAnalytics(true)}
@@ -421,7 +452,11 @@ const Dashboard = () => {
         </div>
 
         {showAnalytics ? (
-          <ChartSection />
+          <ChartSection
+            stats={stats}
+            analyticsRange={analyticsRange}
+            setAnalyticsRange={setAnalyticsRange}
+          />
         ) : (
           <>
             {/* Toolbar */}
@@ -461,65 +496,109 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Task Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {loading ? (
-                [...Array(6)].map((_, i) => <TaskSkeleton key={i} />)
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {filteredTasks.map((task, index) => (
-                    <motion.div
-                      key={task._id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      <div className="group bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-[2.5rem] p-8 transition-all duration-500 flex flex-col min-h-[300px] relative overflow-hidden backdrop-blur-3xl shadow-xl hover:shadow-2xl hover:border-white/20">
-
-                        <div className="flex justify-between items-start mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2.5 h-2.5 rounded-full ${task.status === 'completed' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' :
-                              task.status === 'in-progress' ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]' :
-                                'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]'
-                              }`} />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{task.status.replace('-', ' ')}</span>
-                          </div>
-                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                            <button onClick={() => handleEdit(task)} className="p-2.5 rounded-xl bg-white/5 hover:bg-blue-500/20 text-white/40 hover:text-blue-400 border border-white/10 transition-all">
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(task._id)} className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-400 border border-white/10 transition-all">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <h3 className="text-2xl font-bold text-white mb-4 tracking-tight group-hover:text-blue-400 transition-colors">{task.title}</h3>
-                        <p className="text-white/40 text-[15px] font-medium leading-relaxed mb-8 flex-grow line-clamp-3">{task.description}</p>
-
-                        <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                          <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${task.priority === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                            task.priority === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                              'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                            }`}>
-                            <Activity className="w-3.5 h-3.5" />
-                            {task.priority || 'Normal'}
-                          </div>
-                          {task.dueDate && (
-                            <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 flex items-center gap-2.5">
-                              <Calendar className="w-4 h-4 opacity-40" />
-                              {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                            </div>
-                          )}
-                        </div>
+            {/* Task View Area */}
+            {viewMode === 'kanban' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+                {['pending', 'in-progress', 'completed'].map(columnStatus => (
+                  <div key={columnStatus} className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between px-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${columnStatus === 'completed' ? 'bg-emerald-500' : columnStatus === 'in-progress' ? 'bg-amber-500' : 'bg-blue-500'}`} />
+                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-white/40">{columnStatus.replace('-', ' ')}</h4>
                       </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              )}
-            </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-white/40">
+                        {filteredTasks.filter(t => t.status === columnStatus).length}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col gap-4 min-h-[500px] p-2 rounded-[2.5rem] bg-white/[0.01] border border-dashed border-white/5">
+                      {filteredTasks.filter(t => t.status === columnStatus).map((task, index) => (
+                        <motion.div
+                          key={task._id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="group p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-blue-500/30 transition-all cursor-pointer shadow-lg will-change-transform"
+                          onClick={() => handleEdit(task)}
+                        >
+                          <div className="flex items-center gap-2 mb-4">
+                            <div className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest border ${task.priority === 'high' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                              task.priority === 'medium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                              }`}>
+                              {task.priority || 'Normal'}
+                            </div>
+                          </div>
+                          <h5 className="text-white font-bold text-sm mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">{task.title}</h5>
+                          <p className="text-white/20 text-xs line-clamp-2 mb-4">{task.description}</p>
+
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+                {loading ? (
+                  [...Array(6)].map((_, i) => <TaskSkeleton key={i} />)
+                ) : (
+                  <AnimatePresence mode="popLayout">
+                    {filteredTasks.map((task, index) => (
+                      <motion.div
+                        key={task._id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4, delay: index * 0.05 }}
+                      >
+                        <div className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 backdrop-blur-3xl hover:bg-white/[0.04] transition-all duration-300 will-change-transform flex flex-col min-h-[300px] overflow-hidden shadow-xl hover:shadow-2xl hover:border-white/20">
+
+                          <div className="flex justify-between items-start mb-6">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2.5 h-2.5 rounded-full ${task.status === 'completed' ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]' :
+                                task.status === 'in-progress' ? 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.5)]' :
+                                  'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]'
+                                }`} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{task.status.replace('-', ' ')}</span>
+                            </div>
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                              <button onClick={() => handleEdit(task)} className="p-2.5 rounded-xl bg-white/5 hover:bg-blue-500/20 text-white/40 hover:text-blue-400 border border-white/10 transition-all">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => handleDelete(task._id)} className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-400 border border-white/10 transition-all">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <h3 className="text-2xl font-bold text-white mb-4 tracking-tight group-hover:text-blue-400 transition-colors">{task.title}</h3>
+                          <p className="text-white/40 text-[15px] font-medium leading-relaxed mb-8 flex-grow line-clamp-2">{task.description}</p>
+
+
+                          <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
+                            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${task.priority === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                              task.priority === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                              }`}>
+                              <Activity className="w-3.5 h-3.5" />
+                              {task.priority || 'Normal'}
+                            </div>
+                            {task.dueDate && (
+                              <div className="text-[10px] font-bold uppercase tracking-widest text-white/20 flex items-center gap-2.5">
+                                <Calendar className="w-4 h-4 opacity-40" />
+                                {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )}
+              </div>
+            )}
 
             {/* Empty State */}
             {filteredTasks.length === 0 && !loading && (

@@ -2,7 +2,10 @@ const express = require('express');
 const { body, validationResult, query } = require('express-validator');
 const Task = require('../models/Task');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
+const sendEmail = require('../utils/sendEmail');
+const { getNotificationTemplate } = require('../utils/emailTemplates');
 
 
 const router = express.Router();
@@ -48,7 +51,7 @@ router.post('/', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { title, description, status, priority, dueDate, category, tags } = req.body;
+  const { title, description, status, priority, dueDate, category, tags, subtasks } = req.body;
 
   try {
     const task = new Task({
@@ -59,6 +62,7 @@ router.post('/', [
       dueDate: dueDate || null,
       category: category || 'general',
       tags: tags || [],
+      subtasks: subtasks || [],
       user: req.user,
     });
 
@@ -108,13 +112,15 @@ router.put('/:id', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { title, description, status, priority, dueDate, category, tags } = req.body;
+  const { title, description, status, priority, dueDate, category, tags, subtasks } = req.body;
 
   try {
     const task = await Task.findOne({ _id: req.params.id, user: req.user });
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
+
+    const oldStatus = task.status;
 
     // Update fields if provided
     if (title !== undefined) task.title = title;
@@ -124,8 +130,29 @@ router.put('/:id', [
     if (dueDate !== undefined) task.dueDate = dueDate;
     if (category !== undefined) task.category = category;
     if (tags !== undefined) task.tags = tags;
+    if (subtasks !== undefined) task.subtasks = subtasks;
 
     await task.save();
+
+    // Send email ONLY when task is completed
+    if (oldStatus !== 'completed' && task.status === 'completed') {
+      const foundUser = await User.findById(req.user);
+      if (foundUser && foundUser.email) {
+        const emailHtml = getNotificationTemplate(
+          'Task Completed',
+          `Congratulations ${foundUser.name}! You've successfully finalized <strong style="color: #10b981;">"${task.title}"</strong>. Your focus and efficiency are paying off. Check your updated stats in the dashboard.`,
+          `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+          'View My Progress'
+        );
+
+        await sendEmail({
+          email: foundUser.email,
+          subject: `Victory: ${task.title} Finalized`,
+          html: emailHtml
+        });
+      }
+    }
+
     res.json(task);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

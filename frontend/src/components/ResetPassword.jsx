@@ -20,6 +20,13 @@ const ResetPassword = () => {
     const [status, setStatus] = useState('idle');
     const [message, setMessage] = useState('');
 
+    const maskEmail = (val) => {
+        if (!val) return '';
+        const [name, domain] = val.split('@');
+        if (name.length <= 3) return `***@${domain}`;
+        return `${name.substring(0, 3)}***@${domain}`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -94,7 +101,9 @@ const ResetPassword = () => {
                             <div className="w-full md:w-1/2 p-10 md:p-14">
                                 <div className="mb-10">
                                     <h3 className="text-3xl font-bold text-white mb-2">Setup Password</h3>
-                                    <p className="text-white/40 font-medium">Enter details to update account access.</p>
+                                    <p className="text-white/40 font-medium">
+                                        Enter details to update access for <span className="text-blue-400">{maskEmail(email)}</span>
+                                    </p>
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-6">

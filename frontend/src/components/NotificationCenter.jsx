@@ -21,7 +21,7 @@ const NotificationCenter = () => {
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 60000); // Check every minute
+        const interval = setInterval(fetchNotifications, 30000); // Check every 30s for better responsiveness
         return () => clearInterval(interval);
     }, []);
 
@@ -67,8 +67,11 @@ const NotificationCenter = () => {
     return (
         <div className="relative" ref={dropdownRef}>
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`relative p-2.5 rounded-xl border border-white/10 transition-all ${isOpen ? 'bg-white/10 text-white' : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
+                onClick={() => {
+                    setIsOpen(!isOpen);
+                    if (!isOpen) fetchNotifications();
+                }}
+                className={`relative p-2.5 rounded-xl border border-white/10 transition-all active:scale-95 ${isOpen ? 'bg-white/10 text-white' : 'bg-white/5 text-white/40 hover:text-white hover:bg-white/10'
                     }`}
             >
                 <Bell className="w-5 h-5" />
@@ -138,13 +141,6 @@ const NotificationCenter = () => {
                             )}
                         </div>
 
-                        {notifications.length > 0 && (
-                            <div className="p-6 bg-white/[0.02] border-t border-white/5 text-center">
-                                <button className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-white transition-all">
-                                    Syncing_With_Protocol_09
-                                </button>
-                            </div>
-                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

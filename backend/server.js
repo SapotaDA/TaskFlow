@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
 const notificationRoutes = require('./routes/notifications');
 const initDeadlineChecker = require('./utils/deadlineChecker');
+const initActivityChecker = require('./utils/activityChecker');
 
 const sanitize = require('./middleware/sanitize');
 const helmet = require('helmet');
@@ -26,6 +27,7 @@ connectDB().then(() => {
   console.log('Database connected successfully');
   // Initialize background jobs
   initDeadlineChecker();
+  initActivityChecker();
 
 }).catch((error) => {
   console.error('Database connection failed:', error.message);

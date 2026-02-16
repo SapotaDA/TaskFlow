@@ -8,8 +8,11 @@ import Button from './ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Mail, Edit3, ArrowLeft, Shield, Calendar,
-  LogOut, CheckCircle2, AlertCircle, Trash2
+  LogOut, CheckCircle2, AlertCircle, Trash2, ShieldAlert
 } from 'lucide-react';
+import api from '../services/api';
+import ConfirmModal from './ui/ConfirmModal';
+
 
 const Profile = () => {
   const [editing, setEditing] = useState(false);
@@ -25,6 +28,15 @@ const Profile = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deleteSuccess, setDeleteSuccess] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [hideEmail, setHideEmail] = useState(true);
+
+  const maskEmail = (email) => {
+    if (!email) return '';
+    const [name, domain] = email.split('@');
+    if (name.length <= 3) return `***@${domain}`;
+    return `${name.substring(0, 3)}***@${domain}`;
+  };
 
   const { user, updateProfile, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -59,6 +71,39 @@ const Profile = () => {
       setLoading(false);
     }
   };
+
+  const requestDeleteOtp = async () => {
+    setDeleteStep('otp'); // Switch UI instantly for speed
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await api.post('/auth/delete-account-otp');
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || 'Failed to send verification code');
+      setDeleteStep('confirm'); // Revert if call fails
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async (e) => {
+    if (e) e.preventDefault();
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      await api.post('/auth/delete-account', { otp: deleteOtp });
+      setDeleteSuccess('Account deleted successfully. Redirecting...');
+      setTimeout(() => {
+        logout();
+        navigate('/register');
+      }, 2000);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || 'Invalid or expired OTP');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
 
   return (
     <PageBackground
@@ -97,7 +142,15 @@ const Profile = () => {
               </div>
 
               <h2 className="text-3xl font-bold text-white mb-2">{user?.name}</h2>
-              <p className="text-white/40 mb-8">{user?.email}</p>
+              <div className="flex items-center gap-2 justify-center mb-8">
+                <p className="text-white/40">{hideEmail ? maskEmail(user?.email) : user?.email}</p>
+                <button
+                  onClick={() => setHideEmail(!hideEmail)}
+                  className="p-1 hover:bg-white/5 rounded-md transition-all"
+                >
+                  {hideEmail ? <Eye className="w-3 h-3 text-white/20" /> : <EyeOff className="w-3 h-3 text-white/20" />}
+                </button>
+              </div>
 
               <div className="pt-6 border-t border-white/5 text-left space-y-3">
                 <div className="flex justify-between text-sm text-white/40">
@@ -111,7 +164,7 @@ const Profile = () => {
               </div>
             </Card>
 
-            <Button onClick={logout} className="w-full !py-5">
+            <Button onClick={() => setShowLogoutModal(true)} className="w-full !py-5">
               <LogOut className="w-5 h-5 mr-2" />
               Sign Out
             </Button>
@@ -224,9 +277,16 @@ const Profile = () => {
                     hover:border-blue-500/30
                     rounded-[2rem]
                     transition-all shadow-xl
+                    relative group
                   ">
                     <p className="text-white/40 text-xs mb-2">Email Address</p>
-                    <p className="text-2xl text-white font-bold">{user?.email}</p>
+                    <p className="text-2xl text-white font-bold">{hideEmail ? maskEmail(user?.email) : user?.email}</p>
+                    <button
+                      onClick={() => setHideEmail(!hideEmail)}
+                      className="absolute top-8 right-8 p-2 bg-white/5 opacity-0 group-hover:opacity-100 rounded-xl transition-all"
+                    >
+                      {hideEmail ? <Eye className="w-4 h-4 text-white/40" /> : <EyeOff className="w-4 h-4 text-white/40" />}
+                    </button>
                   </div>
 
                 </div>
@@ -255,17 +315,93 @@ const Profile = () => {
                 Danger Zone
               </h3>
               <p className="text-white/40 mb-6">
-                Permanently delete your account and all associated data.
+                Permanently delete your account and all associated data. This action is irreversible.
               </p>
 
-              <Button variant="danger">
-                Delete Account
-              </Button>
+              {deleteStep === 'confirm' ? (
+                <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
+                  Delete Account
+                </Button>
+              ) : (
+                <motion.form
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onSubmit={handleDeleteAccount}
+                  className="space-y-6"
+                >
+                  <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl mb-6">
+                    <p className="text-red-400 text-sm font-bold flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4" />
+                      Final Verification Required
+                    </p>
+                    <p className="text-white/40 text-xs mt-1">We've sent a 6-digit code to {user?.email}. Enter it below to confirm deletion.</p>
+                  </div>
+
+                  <Input
+                    label="Verification Code"
+                    placeholder="Enter 6-digit OTP"
+                    value={deleteOtp}
+                    onChange={(e) => setDeleteOtp(e.target.value)}
+                    required
+                    maxLength={6}
+                    className="!bg-white/5 border-white/10 text-center text-2xl tracking-[1em] font-black"
+                  />
+
+                  {deleteError && <p className="text-red-400 text-sm font-bold">{deleteError}</p>}
+                  {deleteSuccess && <p className="text-emerald-400 text-sm font-bold">{deleteSuccess}</p>}
+
+                  <div className="flex gap-4">
+                    <Button
+                      type="submit"
+                      variant="danger"
+                      isLoading={deleteLoading}
+                      className="flex-1"
+                    >
+                      Confirm Permanent Deletion
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteStep('confirm')}
+                      className="px-6 py-3 text-white/40 hover:text-white transition-all text-sm font-bold uppercase tracking-widest"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </motion.form>
+              )}
             </Card>
+
+            <ConfirmModal
+              isOpen={showDeleteConfirm}
+              onClose={() => setShowDeleteConfirm(false)}
+              onConfirm={() => {
+                setShowDeleteConfirm(false);
+                requestDeleteOtp();
+              }}
+              title="Delete Your Account?"
+              message="Are you absolutely sure? This will permanently delete your profile, all your tasks, and analytics history. You cannot undo this."
+              confirmText="Send verification code"
+            />
+
 
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          logout();
+          navigate('/login');
+        }}
+        title="Sign Out"
+        message="Are you sure you want to log out? Your session will be terminated."
+        confirmText="Confirm Sign Out"
+        variant="danger"
+      />
     </PageBackground>
   );
 };
