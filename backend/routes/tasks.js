@@ -1,7 +1,9 @@
 const express = require('express');
 const { body, validationResult, query } = require('express-validator');
 const Task = require('../models/Task');
+const Notification = require('../models/Notification');
 const auth = require('../middleware/auth');
+
 
 const router = express.Router();
 
@@ -15,7 +17,7 @@ router.get('/', auth, async (req, res) => {
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
     if (category) filter.category = category;
-    
+
     // Search by title or description
     if (search) {
       filter.$or = [
@@ -61,7 +63,31 @@ router.post('/', [
     });
 
     await task.save();
+
+    // Create a notification for task creation
+    await Notification.create({
+      user: req.user,
+      title: 'New Task Created',
+      message: `You created a new task: "${task.title}".`,
+      type: 'task',
+      relatedTask: task._id
+    });
+
+    // Immediate deadline check for the new task
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
+    if (task.dueDate && task.dueDate >= now && task.dueDate <= tomorrow) {
+      await Notification.create({
+        user: req.user,
+        title: 'Priority: Near Deadline',
+        message: `Warning: Your new task "${task.title}" is due within 24 hours!`,
+        type: 'deadline',
+        relatedTask: task._id
+      });
+    }
+
     res.status(201).json(task);
+
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -123,7 +149,7 @@ router.delete('/:id', auth, async (req, res) => {
 router.get('/stats', auth, async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.user });
-    
+
     const stats = {
       total: tasks.length,
       pending: tasks.filter(t => t.status === 'pending').length,
@@ -141,6 +167,29 @@ router.get('/stats', auth, async (req, res) => {
       const cat = task.category || 'general';
       stats.categories[cat] = (stats.categories[cat] || 0) + 1;
     });
+
+    // Calculate activity for the last 7 days
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+
+      const nextD = new Date(d);
+      nextD.setDate(nextD.getDate() + 1);
+
+      const count = tasks.filter(t => {
+        const createDate = new Date(t.createdAt);
+        return createDate >= d && createDate < nextD;
+      }).length;
+
+      last7Days.push({
+        name: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        count
+      });
+    }
+
+    stats.activity = last7Days;
 
     res.json(stats);
   } catch (error) {

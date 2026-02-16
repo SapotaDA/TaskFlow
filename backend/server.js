@@ -4,6 +4,9 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+const notificationRoutes = require('./routes/notifications');
+const initDeadlineChecker = require('./utils/deadlineChecker');
+
 const sanitize = require('./middleware/sanitize');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -21,6 +24,9 @@ const app = express();
 // Connect to MongoDB
 connectDB().then(() => {
   console.log('Database connected successfully');
+  // Initialize background jobs
+  initDeadlineChecker();
+
 }).catch((error) => {
   console.error('Database connection failed:', error.message);
   process.exit(1);
@@ -46,8 +52,9 @@ app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
-
 app.use('/api/tasks', taskRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 
 // JSON parsing error handler
 app.use((err, req, res, next) => {

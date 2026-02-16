@@ -8,6 +8,8 @@ A full-stack task management application built with React, Node.js, Express, and
 - **Password Recovery**: Support for secure Email reset links and 6-digit OTP verification.
 - **Task Management**: Full CRUD operations with priorities, due dates, categories, and tags.
 - **Advanced Filtering**: Search and filter tasks by status, priority, and category.
+- **Real-time Notifications**: Automated alerts for upcoming deadlines and system events.
+
 - **Security**: Rate limiting, MongoDB sanitization, and XSS protection.
 - **Premium UI**: Responsive design with Tailwind CSS, Framer Motion animations, and Toast notifications.
 
@@ -118,6 +120,13 @@ fullstack-assignment/
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
 - `GET /api/tasks/stats` - Get task statistics
+
+### Notifications (Protected routes)
+- `GET /api/notifications` - Get all user notifications
+- `PATCH /api/notifications/:id/read` - Mark notification as read
+- `PATCH /api/notifications/read-all` - Mark all as read
+- `DELETE /api/notifications/:id` - Delete notification
+
 
 ## Security Features
 
