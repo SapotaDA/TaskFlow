@@ -1,23 +1,18 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // Create a transporter with IPv4 forced and port 587 (STARTTLS)
+    // Use 'service: gmail' which handles host/port automatically
     const transporterConfig = {
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // Use STARTTLS
+        service: 'gmail',
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
         family: 4, // Force IPv4 to prevent ENETUNREACH errors on Render
-        tls: {
-            rejectUnauthorized: false
-        },
         // Connection settings to prevent hangs
-        connectionTimeout: 15000, // Wait 15s for initial connection
-        greetingTimeout: 15000,   // Wait 15s for server greeting
-        socketTimeout: 30000,     // Wait 30s for data
+        connectionTimeout: 20000,
+        greetingTimeout: 20000,
+        socketTimeout: 30000,
         debug: true,
         logger: true
     };
