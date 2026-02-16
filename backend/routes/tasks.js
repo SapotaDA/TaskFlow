@@ -168,9 +168,11 @@ router.get('/stats', auth, async (req, res) => {
       stats.categories[cat] = (stats.categories[cat] || 0) + 1;
     });
 
-    // Calculate activity for the last 7 days
-    const last7Days = [];
-    for (let i = 6; i >= 0; i--) {
+    // Dynamic Activity Scan (Days based on query parameter)
+    const daysRange = parseInt(req.query.days) || 7;
+    const activityData = [];
+
+    for (let i = daysRange - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       d.setHours(0, 0, 0, 0);
@@ -183,13 +185,15 @@ router.get('/stats', auth, async (req, res) => {
         return createDate >= d && createDate < nextD;
       }).length;
 
-      last7Days.push({
-        name: d.toLocaleDateString(undefined, { weekday: 'short' }),
+      activityData.push({
+        name: daysRange > 14
+          ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+          : d.toLocaleDateString(undefined, { weekday: 'short' }),
         count
       });
     }
 
-    stats.activity = last7Days;
+    stats.activity = activityData;
 
     res.json(stats);
   } catch (error) {

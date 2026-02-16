@@ -20,6 +20,8 @@ import {
 
 import Skeleton, { TaskSkeleton } from './ui/Skeleton';
 import NotificationCenter from './NotificationCenter';
+import ConfirmModal from './ui/ConfirmModal';
+
 
 
 const Dashboard = () => {
@@ -27,21 +29,26 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [analyticsRange, setAnalyticsRange] = useState(7);
+
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [metrics, setMetrics] = useState({ network: 99.1, load: 24 });
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     status: 'pending',
     priority: 'medium',
-    category: 'general',
     dueDate: ''
   });
+
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -58,9 +65,10 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/tasks/stats');
+      const response = await api.get(`/tasks/stats?days=${analyticsRange}`);
       setStats(response.data);
     } catch (error) {
+
       console.error('Error fetching stats:', error);
     }
   };
@@ -71,7 +79,9 @@ const Dashboard = () => {
       await Promise.all([fetchTasks(), fetchStats()]);
     };
     init();
+  }, [analyticsRange]);
 
+  useEffect(() => {
     // Metric Simulation
     const interval = setInterval(() => {
       setMetrics(prev => ({
@@ -99,9 +109,9 @@ const Dashboard = () => {
         description: '',
         status: 'pending',
         priority: 'medium',
-        category: 'general',
         dueDate: ''
       });
+
     } catch (error) {
       console.error('Error saving task:', error);
     }
@@ -114,23 +124,29 @@ const Dashboard = () => {
       description: task.description,
       status: task.status,
       priority: task.priority || 'medium',
-      category: task.category || 'general',
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : ''
     });
+
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await api.delete(`/tasks/${id}`);
-        fetchTasks();
-        fetchStats();
-      } catch (error) {
-        console.error('Error deleting task:', error);
-      }
+  const handleDelete = (id) => {
+    setTaskToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await api.delete(`/tasks/${taskToDelete}`);
+      fetchTasks();
+      fetchStats();
+      setShowDeleteModal(false);
+      setTaskToDelete(null);
+    } catch (error) {
+      console.error('Error deleting task:', error);
     }
   };
+
 
   const handleLogout = () => {
     logout();
@@ -197,13 +213,20 @@ const Dashboard = () => {
         >
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-xl font-bold text-white tracking-tight">Weekly Activity</h3>
+              <h3 className="text-xl font-bold text-white tracking-tight">Activity Analysis</h3>
               <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Submission metrics</p>
             </div>
-            <div className="p-3 bg-blue-500/10 rounded-2xl">
-              <Activity className="w-5 h-5 text-blue-400" />
-            </div>
+            <select
+              value={analyticsRange}
+              onChange={(e) => setAnalyticsRange(parseInt(e.target.value))}
+              className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/60 focus:outline-none hover:bg-white/10 cursor-pointer transition-all"
+            >
+              <option value="7" className="bg-slate-900">Last 7 Days</option>
+              <option value="30" className="bg-slate-900">Last 30 Days</option>
+              <option value="90" className="bg-slate-900">Last 90 Days</option>
+            </select>
           </div>
+
           <div className="h-[300px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={stats.activity || []}>
@@ -587,6 +610,31 @@ const Dashboard = () => {
                           ))}
                         </div>
                       </div>
+                      <div className="space-y-3">
+                        <label className="block text-sm font-bold text-white/60 ml-2">Status</label>
+                        <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/10">
+                          {[
+                            { id: 'pending', label: 'Pending' },
+                            { id: 'in-progress', label: 'Active' },
+                            { id: 'completed', label: 'Completed' }
+                          ].map(s => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, status: s.id })}
+                              className={`flex-1 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${formData.status === s.id
+                                ? 'bg-white text-black shadow-lg scale-[1.02]'
+                                : 'text-white/40 hover:text-white hover:bg-white/5'
+                                }`}
+                            >
+                              {s.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-8">
                       <Input
                         label="Due Date"
                         type="date"
@@ -595,6 +643,7 @@ const Dashboard = () => {
                         className="bg-white/[0.03] border-white/10 font-medium py-5 px-6 rounded-2xl [color-scheme:dark]"
                       />
                     </div>
+
                   </div>
 
                   <div className="flex gap-4 pt-6">
@@ -615,7 +664,17 @@ const Dashboard = () => {
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Confirm Deletion"
+        message="This action cannot be undone. Are you sure you want to permanently erase this task from the protocol?"
+        confirmText="Erase Task"
+      />
     </PageBackground >
+
   );
 };
 
