@@ -323,19 +323,26 @@ router.put('/me', auth, [
         console.log(`OTP: ${otp}`);
         console.log('==========================================\n');
       } else {
-        // Send verification email to NEW email
-        const emailHtml = getNotificationTemplate(
-          'Email Change Verification',
-          `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
-          '#',
-          'Verify in App'
-        );
+        try {
+          const emailHtml = getNotificationTemplate(
+            'Email Change Verification',
+            `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
+            '#',
+            'Verify in App'
+          );
 
-        await sendEmail({
-          email: email, // Send to new email
-          subject: 'Verify New Email Address - TaskFlow',
-          html: emailHtml
-        }).catch(err => console.error('Email change OTP failed:', err));
+          await sendEmail({
+            email: email, // Send to new email
+            subject: 'Verify New Email Address - TaskFlow',
+            html: emailHtml
+          });
+        } catch (err) {
+          console.error('Email change OTP failed:', err.message);
+          return res.status(500).json({
+            message: 'Failed to send verification email. Please check your email settings on Render.',
+            error: err.message
+          });
+        }
       }
     }
 
