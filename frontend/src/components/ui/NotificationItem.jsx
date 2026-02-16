@@ -22,12 +22,12 @@ const NotificationItem = ({ notification, onRead, onDelete }) => {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10 }}
-            className={`p-4 rounded-2xl border ${notification.read
+            className={`p-3 sm:p-4 rounded-2xl border ${notification.read
                 ? 'bg-white/[0.02] border-white/5 opacity-60'
                 : 'bg-white/[0.05] border-white/10 shadow-lg'
                 } hover:bg-white/[0.08] transition-all group relative mb-3`}
         >
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${notification.read ? 'bg-white/5' : 'bg-indigo-500/10 border border-indigo-500/20'
                     }`}>
                     {getIcon()}

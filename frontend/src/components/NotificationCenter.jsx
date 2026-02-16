@@ -92,9 +92,9 @@ const NotificationCenter = () => {
                         initial={{ opacity: 0, y: 15, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                        className="absolute right-0 mt-4 w-[380px] bg-[#0c0d10]/95 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] shadow-3xl z-[200] overflow-hidden"
+                        className="absolute right-0 mt-4 w-[280px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-[#0c0d10]/95 backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-3xl z-[200] overflow-hidden"
                     >
-                        <div className="p-8 pb-4 flex items-center justify-between border-b border-white/5">
+                        <div className="p-5 sm:p-8 pb-3 sm:pb-4 flex items-center justify-between border-b border-white/5">
                             <div>
                                 <h3 className="text-xl font-bold text-white tracking-tight">Notifications</h3>
                                 <p className="text-xs text-white/40 mt-1 uppercase tracking-widest font-bold">Latest Updates</p>
@@ -118,7 +118,7 @@ const NotificationCenter = () => {
                             </div>
                         </div>
 
-                        <div className="max-h-[450px] overflow-y-auto p-4 custom-scrollbar">
+                        <div className="max-h-[400px] sm:max-h-[450px] overflow-y-auto p-3 sm:p-4 custom-scrollbar">
                             {notifications.length > 0 ? (
                                 <div className="space-y-1">
                                     {notifications.map((notification) => (
