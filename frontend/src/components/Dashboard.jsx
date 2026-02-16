@@ -193,14 +193,6 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <NotificationCenter />
             <div className="h-6 w-px bg-white/10" />
-            <button
-              onClick={() => setShowTour(true)}
-              className="p-2 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 border border-white/5 transition-all"
-              title="View Tutorial"
-            >
-              <HelpCircle className="w-4 h-4" />
-            </button>
-            <div className="h-6 w-px bg-white/10" />
             <button onClick={() => navigate('/profile')} className="flex items-center gap-2.5 group px-2 py-1 rounded-lg hover:bg-white/5 transition-colors">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-lg overflow-hidden border border-white/10 group-hover:border-white/20 transition-all">
                 {user?.profilePicture ? (
@@ -359,6 +351,18 @@ const Dashboard = () => {
       />
 
       {showTour && <OnboardingTour onComplete={completeTour} />}
+
+      {/* Floating Tutorial Tab */}
+      <motion.button
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ x: -4 }}
+        onClick={() => setShowTour(true)}
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-[90] bg-blue-600 hover:bg-blue-500 text-white px-2 py-4 rounded-l-2xl shadow-2xl flex flex-col items-center gap-2 border-l border-t border-b border-white/20 transition-all group"
+      >
+        <HelpCircle className="w-5 h-5" />
+        <span className="[writing-mode:vertical-lr] text-[10px] font-black uppercase tracking-[0.2em]">Tutorial</span>
+      </motion.button>
     </PageBackground>
   );
 };
