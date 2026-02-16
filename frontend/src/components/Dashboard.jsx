@@ -5,7 +5,7 @@ import api from '../services/api';
 import PageBackground from './ui/PageBackground';
 import Button from './ui/Button';
 import {
-  Plus, Search, LogOut, LayoutGrid, Activity, BarChart3, Settings2, Bell, User
+  Plus, Search, LogOut, LayoutGrid, Activity, BarChart3, Settings2, Bell, User, HelpCircle
 } from 'lucide-react';
 
 // Specialized Dashboard Components
@@ -16,6 +16,7 @@ import Skeleton from './ui/Skeleton';
 import NotificationCenter from './NotificationCenter';
 import ConfirmModal from './ui/ConfirmModal';
 import FeedbackCard from './ui/FeedbackCard';
+import OnboardingTour from './ui/OnboardingTour';
 
 // Lazy load ChartSection
 const ChartSection = lazy(() => import('./dashboard/ChartSection'));
@@ -26,6 +27,20 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [analyticsRange, setAnalyticsRange] = useState(7);
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    const tourShowed = localStorage.getItem('tf_tour_showed');
+    if (!tourShowed) {
+      const timer = setTimeout(() => setShowTour(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const completeTour = () => {
+    setShowTour(false);
+    localStorage.setItem('tf_tour_showed', 'true');
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -177,6 +192,14 @@ const Dashboard = () => {
 
           <div className="flex items-center gap-4">
             <NotificationCenter />
+            <div className="h-6 w-px bg-white/10" />
+            <button
+              onClick={() => setShowTour(true)}
+              className="p-2 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 border border-white/5 transition-all"
+              title="View Tutorial"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
             <div className="h-6 w-px bg-white/10" />
             <button onClick={() => navigate('/profile')} className="flex items-center gap-2.5 group px-2 py-1 rounded-lg hover:bg-white/5 transition-colors">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-lg overflow-hidden border border-white/10 group-hover:border-white/20 transition-all">
@@ -334,6 +357,8 @@ const Dashboard = () => {
         confirmText="Sign Out"
         variant="danger"
       />
+
+      {showTour && <OnboardingTour onComplete={completeTour} />}
     </PageBackground>
   );
 };
