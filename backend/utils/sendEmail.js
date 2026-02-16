@@ -3,16 +3,22 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (options) => {
     // Create a transporter
     const transporterConfig = {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL/TLS
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
         tls: {
-            rejectUnauthorized: false // Helps with connection stability on Render
+            rejectUnauthorized: false
         }
     };
 
+    console.log(`Initialising mail server: ${process.env.EMAIL_USER} (Pass length: ${process.env.EMAIL_PASS?.length})`);
     const transporter = nodemailer.createTransport(transporterConfig);
 
     // Define email options
