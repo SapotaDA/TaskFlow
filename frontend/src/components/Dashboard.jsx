@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo, useCallback, lazy, Suspense } from 'react';
+import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
