@@ -30,6 +30,7 @@ coverage/
 *.swo
 
 # OS generated files
+.cursor/
 .DS_Store
 .DS_Store?
 ._*
