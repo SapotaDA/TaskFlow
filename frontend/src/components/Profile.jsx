@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import PageBackground from './ui/PageBackground';
@@ -7,7 +7,7 @@ import Button from './ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, LogOut, CheckCircle2,
-  AlertCircle, Trash2, ShieldAlert, Eye, EyeOff, User, Mail, Shield, Zap, Terminal, ShieldCheck
+  AlertCircle, Trash2, ShieldAlert, Eye, EyeOff, User, Mail, Shield, Zap, Terminal, ShieldCheck, Camera, Loader2
 } from 'lucide-react';
 import api from '../services/api';
 import ConfirmModal from './ui/ConfirmModal';
@@ -15,7 +15,8 @@ import FeedbackCard from './ui/FeedbackCard';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, updateProfile, logout } = useContext(AuthContext);
+  const { user, updateProfile, updateProfilePicture, logout } = useContext(AuthContext);
+  const fileInputRef = useRef(null);
 
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '' });
@@ -23,6 +24,7 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteStep, setDeleteStep] = useState('confirm');
@@ -52,6 +54,33 @@ const Profile = () => {
       email: user?.email || '',
     });
   }, [user, navigate]);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      setUploading(true);
+      setError('');
+      try {
+        await updateProfilePicture(reader.result);
+        setSuccess('Profile picture updated!');
+        setTimeout(() => setSuccess(''), 3000);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to upload image');
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -210,12 +239,42 @@ const Profile = () => {
           {/* Identity Card */}
           <section className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden group">
             <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
-              <div className="relative">
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-3xl text-white font-bold shadow-2xl border border-white/10">
-                  {user?.name?.charAt(0)?.toUpperCase()}
+              <div className="relative group/avatar">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`w-28 h-28 rounded-3xl flex items-center justify-center relative overflow-hidden cursor-pointer transition-all duration-500 ${!user?.profilePicture ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-slate-900'} shadow-2xl border border-white/10 group-hover/avatar:scale-[1.02] group-hover/avatar:border-white/20`}
+                >
+                  {uploading ? (
+                    <div className="absolute inset-0 bg-[#020305]/60 backdrop-blur-sm flex items-center justify-center z-20">
+                      <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 bg-black/0 group-hover/avatar:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 z-10">
+                      <Camera className="w-8 h-8 text-white" />
+                    </div>
+                  )}
+
+                  {user?.profilePicture ? (
+                    <img
+                      src={user.profilePicture}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl text-white font-bold tracking-tighter">
+                      {user?.name?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
                 </div>
-                <div className="absolute -bottom-2 -right-2 p-2 bg-emerald-500 rounded-xl border-4 border-[#020305] shadow-lg">
-                  <ShieldCheck className="w-3 h-3 text-white" />
+                <div className="absolute -bottom-2 -right-2 p-2.5 bg-emerald-500 rounded-2xl border-4 border-[#020305] shadow-xl z-20">
+                  <ShieldCheck className="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
 

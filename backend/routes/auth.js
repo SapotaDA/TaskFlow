@@ -290,6 +290,35 @@ router.get('/me', auth, async (req, res) => {
  * @desc    Update Profile
  * @route   PUT /api/auth/me
  */
+// Update Profile Picture
+router.put('/profile-picture', auth, [
+  body('image').notEmpty().withMessage('Image data is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.profilePicture = req.body.image; // Base64 or URL
+    await user.save();
+
+    res.json({
+      message: 'Profile picture updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Profile Picture Error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Update Profile
 router.put('/me', auth, [
   body('name').notEmpty().withMessage('Name is required'),

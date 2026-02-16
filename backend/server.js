@@ -69,8 +69,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10kb' })); // Limit body size to prevent DoS
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: '5mb' })); // Increased for profile picture uploads
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Apply sanitization middleware
 app.use(sanitize);
@@ -116,7 +116,7 @@ const PORT = process.env.PORT || 3001;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  console.log('--- DEPLOYMENT: V1.4 (Gmail Service Fix) ---');
+  console.log('--- DEPLOYMENT: V1.5 (Profile Pic + Email Fixes) ---');
 });
 
 server.on('error', (err) => {

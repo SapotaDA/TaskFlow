@@ -54,6 +54,12 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   }, []);
 
+  const updateProfilePicture = useCallback(async (imageData) => {
+    const response = await api.put('/auth/profile-picture', { image: imageData });
+    setUser(response.data.user);
+    return response.data;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
@@ -64,9 +70,10 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     updateProfile,
+    updateProfilePicture,
     logout,
     loading
-  }), [user, loading, login, register, updateProfile, logout]);
+  }), [user, loading, login, register, updateProfile, updateProfilePicture, logout]);
 
   return (
     <AuthContext.Provider value={value}>
