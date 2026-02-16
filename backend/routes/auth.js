@@ -278,6 +278,7 @@ router.get('/me', auth, async (req, res) => {
  * @desc    Update Profile
  * @route   PUT /api/auth/me
  */
+// Update Profile
 router.put('/me', auth, [
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
@@ -291,21 +292,110 @@ router.put('/me', auth, [
     const user = await User.findById(req.user);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Check if email is already taken by another user
+    user.name = name;
+    let emailChangePending = false;
+
+    // Check if email is being changed
     if (email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) return res.status(400).json({ message: 'Email already in use' });
+
+      // Init email change verification
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      user.newEmail = email;
+      user.newEmailOtp = otp;
+      user.newEmailOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
+      emailChangePending = true;
+
+      // DEV SIMULATION FOR EMAIL CHANGE
+      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
+        console.log('\n=== DEV SIMULATION: EMAIL CHANGE OTP ===');
+        console.log(`To: ${email}`);
+        console.log(`OTP: ${otp}`);
+        console.log('==========================================\n');
+      } else {
+        // Send verification email to NEW email
+        const emailHtml = getNotificationTemplate(
+          'Email Change Verification',
+          `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
+          '#',
+          'Verify in App'
+        );
+
+        await sendEmail({
+          email: email, // Send to new email
+          subject: 'Verify New Email Address - TaskFlow',
+          html: emailHtml
+        }).catch(err => console.error('Email change OTP failed:', err));
+      }
     }
 
-    user.name = name;
-    user.email = email;
     await user.save();
 
     res.json({
-      message: 'Profile updated successfully',
+      message: emailChangePending ? 'Profile updated. Verification required for new email.' : 'Profile updated successfully',
+      emailChangePending,
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
+    console.error('Update Profile Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Verify Email Change
+router.post('/verify-email-change', auth, [
+  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { otp } = req.body;
+
+  try {
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Verify pending change existence
+    if (!user.newEmail || !user.newEmailOtp || !user.newEmailOtpExpire) {
+      console.log('Verify Email Change Failed: No pending change', {
+        newEmail: user.newEmail,
+        hasOtp: !!user.newEmailOtp,
+        hasExpire: !!user.newEmailOtpExpire
+      });
+      return res.status(400).json({ message: 'No email change pending.' });
+    }
+
+    // Verify OTP value and expiration
+    const isOtpValid = user.newEmailOtp === otp.trim();
+    const isNotExpired = user.newEmailOtpExpire > Date.now();
+
+    if (!isOtpValid || !isNotExpired) {
+      console.log('Verify Email Change Failed:', {
+        inputOtp: otp,
+        storedOtp: user.newEmailOtp,
+        isOtpValid,
+        isNotExpired,
+        expireTime: user.newEmailOtpExpire,
+        now: Date.now()
+      });
+      return res.status(400).json({ message: isOtpValid ? 'Verification code expired.' : 'Invalid verification code.' });
+    }
+
+    // Commit change
+    user.email = user.newEmail;
+    user.newEmail = null;
+    user.newEmailOtp = null;
+    user.newEmailOtpExpire = null;
+
+    await user.save();
+
+    res.json({
+      message: 'Email address updated successfully.',
+      user: { id: user._id, name: user.name, email: user.email }
+    });
+  } catch (error) {
+    console.error('Verify Email Change Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -381,6 +471,43 @@ router.post('/delete-account', auth, [
   } catch (error) {
     console.error('Delete Account Error:', error.message);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.post('/test-inactivity-email', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const emailHtml = getNotificationTemplate(
+      'System Dormancy Detected',
+      `Operator ${user.name}, your account has been flagged as inactive for over 7 days. <br><br>
+      Consistent activity is required to maintain optimal workflow synchronization. Please access your terminal to refresh your session status.`,
+      `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`,
+      'Reinitialize Session'
+    );
+
+    // Force send regardless of actual status
+    if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
+      console.log('\n=== DEV SIMULATION: INACTIVITY EMAIL ===');
+      console.log(`To: ${user.email}`);
+      console.log('--- Content ---');
+      console.log('Subject: Action Required: Inactivity Alert');
+      console.log('System Dormancy Detected...');
+      console.log('========================================\n');
+      return res.json({ message: 'DEV MODE: Test email logged to server console.' });
+    }
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Action Required: Inactivity Alert',
+      html: emailHtml
+    });
+
+    res.json({ message: 'Test inactivity warning dispatched.' });
+  } catch (error) {
+    console.error('Test Email Error:', error);
+    res.status(500).json({ message: 'Dispatch failed.' });
   }
 });
 

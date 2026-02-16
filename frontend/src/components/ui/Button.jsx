@@ -10,11 +10,11 @@ const Button = ({
     type = 'button',
     ...props
 }) => {
-    const baseStyles = "w-full py-3.5 px-6 rounded-[1.25rem] font-black text-sm uppercase tracking-[0.15em] transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center relative overflow-hidden group";
+    const baseStyles = "relative inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden active:scale-95 whitespace-nowrap";
 
     const variants = {
-        primary: "bg-white text-slate-950 shadow-[0_10px_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_20px_60px_-10px_rgba(255,255,255,0.4)] border border-white/20 hover:scale-[1.02] active:scale-[0.98]",
-        secondary: "bg-white/[0.03] border border-white/10 text-white/50 hover:bg-white/[0.08] hover:text-white hover:border-white/20 backdrop-blur-xl",
+        primary: "bg-white text-black shadow-lg hover:shadow-white/10 hover:bg-white/90",
+        secondary: "bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:border-white/20",
         danger: "bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 hover:border-red-500/40",
         ghost: "text-white/40 hover:text-white hover:bg-white/5"
     };
@@ -24,27 +24,15 @@ const Button = ({
             type={type}
             className={`${baseStyles} ${variants[variant]} ${className}`}
             disabled={disabled || isLoading}
+            whileHover={{ y: -1 }}
             {...props}
         >
-            {/* Shimmer Effect for Primary */}
-            {variant === 'primary' && !isLoading && (
-                <motion.div
-                    animate={{ x: ["-100%", "200%"] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-black/[0.05] to-transparent skew-x-[-20deg]"
-                />
-            )}
-
-            <div className="relative z-10 flex items-center justify-center gap-3">
-                {isLoading ? (
-                    <>
-                        <div className={`w-4 h-4 border-2 rounded-full animate-spin ${variant === 'primary' ? 'border-slate-950/20 border-t-slate-950' : 'border-white/20 border-t-white'}`}></div>
-                        <span>Processing...</span>
-                    </>
-                ) : (
-                    children
-                )}
-            </div>
+            {isLoading ? (
+                <div className="flex items-center gap-2">
+                    <div className={`w-3.5 h-3.5 border-2 rounded-full animate-spin ${variant === 'primary' ? 'border-black/20 border-t-black' : 'border-white/20 border-t-white'}`}></div>
+                    <span className="opacity-70 text-xs">Processing...</span>
+                </div>
+            ) : children}
         </motion.button>
     );
 };

@@ -10,28 +10,27 @@ const Input = ({
     ...props
 }) => {
     return (
-        <div className={`space-y-2.5 ${containerClassName}`}>
+        <div className={`space-y-1.5 ${containerClassName}`}>
             {label && (
-                <label htmlFor={id} className="block text-[11px] font-black text-white/40 uppercase tracking-[0.2em] ml-1.5">
+                <label htmlFor={id} className="block text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">
                     {label}
                 </label>
             )}
             <div className="relative group">
                 <input
                     id={id}
-                    className={`w-full px-5 py-4 bg-white/[0.03] backdrop-blur-3xl border border-white/5 rounded-2xl text-white placeholder-white/10 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/40 focus:shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-500 hover:bg-white/[0.05] hover:border-white/10 ${className}`}
+                    className={`w-full px-4 py-2.5 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder-white/20 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/30 transition-all duration-300 hover:bg-white/[0.04] ${className}`}
                     {...props}
                 />
                 {rightIcon && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-1">
+                    <div className="absolute inset-y-0 right-3 flex items-center">
                         {rightIcon}
                     </div>
                 )}
             </div>
             {error && (
-                <div className="flex items-center gap-2 mt-1.5 ml-1.5">
-                    <span className="w-1 h-1 bg-red-400 rounded-full" />
-                    <p className="text-red-400/80 text-[10px] font-black uppercase tracking-widest">
+                <div className="flex items-center gap-1.5 mt-1 ml-1">
+                    <p className="text-red-400 text-[10px] font-semibold">
                         {error}
                     </p>
                 </div>

@@ -35,7 +35,18 @@ connectDB().then(() => {
 });
 
 // Middleware
-app.use(helmet()); // Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://grainy-gradients.vercel.app"],
+      connectSrc: ["'self'", process.env.FRONTEND_URL || "http://localhost:5173"],
+    },
+  },
+}));
 app.use(compression()); // Compress responses
 app.use(morgan('dev')); // Logging
 app.use(cors({
@@ -52,11 +63,30 @@ app.use(sanitize);
 // Apply global rate limiting to all API routes
 app.use('/api', apiLimiter);
 
+const path = require('path');
+
+// ... existing code ...
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+  // Handle API 404s explicitly before catch-all
+  app.all('/api/*', (req, res) => {
+    res.status(404).json({ message: 'API route not found' });
+  });
+
+  // SPA catch-all
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  });
+}
 
 // JSON parsing error handler
 app.use((err, req, res, next) => {

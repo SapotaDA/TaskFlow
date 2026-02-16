@@ -2,11 +2,10 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import PageBackground from './ui/PageBackground';
-import Card from './ui/Card';
 import Input from './ui/Input';
 import Button from './ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, ShieldCheck, Terminal, Activity, Eye, EyeOff, Lock, Zap } from 'lucide-react';
+import { Eye, EyeOff, Lock, Zap, ShieldCheck, Activity } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,7 +14,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [metrics, setMetrics] = useState({ network: 99.1, active: 1420 });
+  const [systemUptime, setSystemUptime] = useState(99.98);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
@@ -28,20 +27,10 @@ const Login = () => {
     }
   }, []);
 
-  const maskDisplayEmail = (val) => {
-    if (!val) return '';
-    const [name, domain] = val.split('@');
-    if (name.length <= 3) return `***@${domain}`;
-    return `${name.substring(0, 3)}***@${domain}`;
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
-      setMetrics(prev => ({
-        network: +(prev.network + (Math.random() * 0.2 - 0.1)).toFixed(1),
-        active: prev.active + Math.floor(Math.random() * 3 - 1)
-      }));
-    }, 4000);
+      setSystemUptime(prev => +(prev + (Math.random() * 0.02 - 0.01)).toFixed(2));
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -59,7 +48,7 @@ const Login = () => {
       }
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Access_Denied: Invalid credentials sequence');
+      setError(err.response?.data?.message || 'Authorization_Denied: Sequence failure');
     } finally {
       setLoading(false);
     }
@@ -67,163 +56,167 @@ const Login = () => {
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08, delayChildren: 0.2 }
-    }
+    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
-    }
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
   };
 
   return (
     <PageBackground
-      gradient="bg-gradient-to-br from-[#020305] via-slate-900 to-black"
-      blob1="bg-blue-600/10"
-      blob2="bg-purple-600/10"
-      blob3="bg-slate-700/10"
+      gradient="bg-gradient-to-br from-[#020305] via-[#050608] to-black"
+      blob1="bg-blue-600/5"
+      blob2="bg-purple-600/5"
+      blob3="bg-slate-700/5"
     >
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Card className="w-full max-w-6xl bg-[#0c0d10]/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
-
-          <div className="flex flex-col md:flex-row">
-
-            {/* LEFT PANEL */}
-            <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 bg-[#0a0b0e]/60 border-b md:border-b-0 md:border-r border-white/10">
-
-              {/* Logo */}
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
-                  <span className="text-slate-900 font-black text-lg">TF</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-white">TaskFlow</h1>
-                  <p className="text-xs text-white/40 tracking-widest uppercase">
-                    Simplify your workflow
-                  </p>
-                </div>
+      <div className="min-h-screen flex flex-col md:flex-row">
+        {/* Left Side: Visual/Branding (Desktop Only) */}
+        <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-16 overflow-hidden">
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-slate-900 font-black text-xs">TF</span>
               </div>
+              <span className="text-white font-bold text-xl tracking-tight">TaskFlow</span>
+            </div>
 
-              {/* Heading */}
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                Welcome Back
-              </h2>
-              <p className="text-white/40 mb-10">
-                Login to access your dashboard and manage your workflow.
-              </p>
+            <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
+              Accelerate your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">productivity engine.</span>
+            </h2>
+            <p className="text-lg text-white/30 max-w-md font-medium leading-relaxed">
+              Clinical task management for modern teams who demand surgical precision in their workflows.
+            </p>
+          </div>
 
-              {/* FORM */}
-              <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative z-10 flex gap-12">
+            <div>
+              <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-2">Network Status</p>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="text-sm font-bold text-white/60 tabular-nums">OPERATIONAL</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] mb-2">System Uptime</p>
+              <div className="flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-sm font-bold text-white/60 tabular-nums">{systemUptime}%</span>
+              </div>
+            </div>
+          </div>
 
-                {error && (
-                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                    {error}
-                  </div>
-                )}
+          {/* Abstract Decorations */}
+          <div className="absolute top-1/4 -right-20 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full" />
+          <div className="absolute bottom-1/4 -left-20 w-60 h-60 bg-purple-500/10 blur-[100px] rounded-full" />
+        </div>
 
+        {/* Right Side: Auth Form */}
+        <div className="flex-1 flex items-center justify-center p-6 lg:p-16 relative">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="w-full max-w-sm"
+          >
+            <motion.div variants={itemVariants} className="mb-10">
+              <div className="lg:hidden flex items-center gap-3 mb-8">
+                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-slate-900 font-black text-xs">TF</span>
+                </div>
+                <span className="text-white font-bold text-xl tracking-tight">TaskFlow</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Member Authorization</h3>
+              <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Provide security credentials to proceed.</p>
+            </motion.div>
+
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-3.5 rounded-xl bg-red-500/5 border border-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-wider flex items-center gap-3"
+              >
+                <Lock className="w-4 h-4" />
+                {error}
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <motion.div variants={itemVariants}>
                 <Input
-                  label="Email"
+                  label="Network Address"
                   id="email"
                   type="email"
-                  placeholder="you@email.com"
+                  placeholder="name@nexus.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
                 />
+              </motion.div>
 
+              <motion.div variants={itemVariants}>
                 <Input
-                  label="Password"
+                  label="Password Sequence"
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
                   rightIcon={
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="text-white/40 hover:text-white"
+                      className="text-white/20 hover:text-white transition-colors"
                     >
-                      {showPassword ? <EyeOff /> : <Eye />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   }
                 />
+              </motion.div>
 
-                {/* Remember + forgot */}
-                <div className="flex items-center justify-between text-sm">
-                  <label className="flex items-center gap-2 text-white/60">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-                    Remember me
-                  </label>
+              <motion.div variants={itemVariants} className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-[10px] font-bold text-white/30 uppercase tracking-widest cursor-pointer hover:text-white/50 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-blue-500 focus:ring-blue-500/20"
+                  />
+                  Remember Identity
+                </label>
 
-                  <Link to="/forgot-password" className="text-blue-400 hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
+                <Link to="/forgot-password" title="Initialize Recovery" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors">
+                  Recovery Mode
+                </Link>
+              </motion.div>
 
+              <motion.div variants={itemVariants} className="pt-2">
                 <Button
                   type="submit"
                   isLoading={loading}
-                  className="w-full py-4 rounded-xl text-lg font-semibold bg-white text-black hover:bg-white/90"
+                  className="w-full py-3"
                 >
-                  Login
+                  Authorize Access
                 </Button>
+              </motion.div>
 
-                <p className="text-center text-white/40 text-sm mt-6">
-                  Don’t have an account?{" "}
-                  <Link to="/register" className="text-blue-400 hover:underline">
-                    Register
+              <motion.div variants={itemVariants} className="text-center pt-6">
+                <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
+                  New operator?{" "}
+                  <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
+                    Initialize Protocol
                   </Link>
                 </p>
-
-              </form>
-            </div>
-
-            {/* RIGHT PANEL */}
-            <div className="hidden md:flex w-1/2 bg-gradient-to-br from-blue-600/10 to-purple-600/10 items-center justify-center p-12">
-              <div className="max-w-md">
-                <h2 className="text-4xl font-bold text-white mb-4">
-                  Manage Tasks Faster
-                </h2>
-                <p className="text-white/50 leading-relaxed text-lg font-medium">
-                  Track projects, collaborate with your team, and stay productive with TaskFlow’s smart workflow management system.
-                </p>
-                <div className="mt-12 space-y-6">
-                  <div className="flex items-center gap-4 text-white/40">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                      <Zap className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <span className="font-semibold">Lightning Fast Interface</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-white/40">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                      <ShieldCheck className="w-5 h-5 text-purple-400" />
-                    </div>
-                    <span className="font-semibold">Enterprise Grade Security</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </Card>
+              </motion.div>
+            </form>
+          </motion.div>
+        </div>
       </div>
     </PageBackground>
   );
-
 };
 
 export default Login;

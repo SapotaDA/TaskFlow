@@ -1,5 +1,6 @@
 const express = require('express');
-const { body, validationResult, query } = require('express-validator');
+const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const Task = require('../models/Task');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
@@ -7,21 +8,22 @@ const auth = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 const { getNotificationTemplate } = require('../utils/emailTemplates');
 
-
 const router = express.Router();
 
-// Get all tasks for the authenticated user with optional filters
+/**
+ * @route   GET /api/tasks
+ * @desc    Get all tasks for the authenticated user
+ * @access  Private
+ */
 router.get('/', auth, async (req, res) => {
   try {
     const { status, priority, category, search } = req.query;
     const filter = { user: req.user };
 
-    // Apply filters if provided
     if (status) filter.status = status;
     if (priority) filter.priority = priority;
     if (category) filter.category = category;
 
-    // Search by title or description
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -32,19 +34,21 @@ router.get('/', auth, async (req, res) => {
     const tasks = await Task.find(filter).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Operational failure: Database retrieval error' });
   }
 });
 
-// Create a new task
+/**
+ * @route   POST /api/tasks
+ * @desc    Create a new task
+ * @access  Private
+ */
 router.post('/', [
   auth,
   body('title').notEmpty().withMessage('Title is required'),
   body('description').notEmpty().withMessage('Description is required'),
   body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Invalid status'),
   body('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Invalid priority'),
-  body('category').optional().isString().withMessage('Category must be a string'),
-  body('tags').optional().isArray().withMessage('Tags must be an array'),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -71,58 +75,54 @@ router.post('/', [
     // Create a notification for task creation
     await Notification.create({
       user: req.user,
-      title: 'New Task Created',
-      message: `You created a new task: "${task.title}".`,
+      title: 'Sequence Initialized',
+      message: `System has registered new objective: "${task.title}".`,
       type: 'task',
       relatedTask: task._id
     });
 
-    // Immediate deadline check for the new task
-    const now = new Date();
-    const tomorrow = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-    if (task.dueDate && task.dueDate >= now && task.dueDate <= tomorrow) {
-      await Notification.create({
-        user: req.user,
-        title: 'Priority: Near Deadline',
-        message: `Warning: Your new task "${task.title}" is due within 24 hours!`,
-        type: 'deadline',
-        relatedTask: task._id
-      });
+    // Send email notification for task creation
+    const taskUser = await User.findById(req.user);
+    if (taskUser && taskUser.email) {
+      const emailHtml = getNotificationTemplate(
+        'Objective Initialized',
+        `Operator ${taskUser.name}, the system has successfully registered your new objective: <strong style="color: #3b82f6;">"${task.title}"</strong>. <br><br>Status: <span style="color: #ffffff;">${task.status.toUpperCase()}</span><br>Priority: <span style="color: #ffffff;">${task.priority.toUpperCase()}</span>`,
+        `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
+        'Access Dashboard'
+      );
+
+      // We don't await this to avoid blocking the response
+      sendEmail({
+        email: taskUser.email,
+        subject: `System Alert: New Objective "${task.title}"`,
+        html: emailHtml
+      }).catch(err => console.error('Email dispatch failed:', err));
     }
 
     res.status(201).json(task);
-
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Initialization failure: Sequence could not be saved' });
   }
 });
 
-// Update a task
+/**
+ * @route   PUT /api/tasks/:id
+ * @desc    Update a task
+ * @access  Private
+ */
 router.put('/:id', [
   auth,
   body('title').optional().notEmpty().withMessage('Title cannot be empty'),
-  body('description').optional().notEmpty().withMessage('Description cannot be empty'),
   body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Invalid status'),
-  body('priority').optional().isIn(['low', 'medium', 'high']).withMessage('Invalid priority'),
-  body('category').optional().isString().withMessage('Category must be a string'),
-  body('tags').optional().isArray().withMessage('Tags must be an array'),
 ], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
   const { title, description, status, priority, dueDate, category, tags, subtasks } = req.body;
 
   try {
     const task = await Task.findOne({ _id: req.params.id, user: req.user });
-    if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
-    }
+    if (!task) return res.status(404).json({ message: 'Target mismatch: Objective not found' });
 
     const oldStatus = task.status;
 
-    // Update fields if provided
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
@@ -134,20 +134,19 @@ router.put('/:id', [
 
     await task.save();
 
-    // Send email ONLY when task is completed
     if (oldStatus !== 'completed' && task.status === 'completed') {
       const foundUser = await User.findById(req.user);
-      if (foundUser && foundUser.email) {
+      if (foundUser?.email) {
         const emailHtml = getNotificationTemplate(
-          'Task Completed',
-          `Congratulations ${foundUser.name}! You've successfully finalized <strong style="color: #10b981;">"${task.title}"</strong>. Your focus and efficiency are paying off. Check your updated stats in the dashboard.`,
+          'Objective Finalized',
+          `System alert: User ${foundUser.name} has successfully terminated objective <strong style="color: #10b981;">"${task.title}"</strong>. Operational efficiency has improved.`,
           `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard`,
-          'View My Progress'
+          'View Logs'
         );
 
         await sendEmail({
           email: foundUser.email,
-          subject: `Victory: ${task.title} Finalized`,
+          subject: `System: ${task.title} Finalized`,
           html: emailHtml
         });
       }
@@ -155,75 +154,125 @@ router.put('/:id', [
 
     res.json(task);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Update failure: Data modification denied' });
   }
 });
 
-// Delete a task
+/**
+ * @route   DELETE /api/tasks/:id
+ * @desc    Delete a task
+ * @access  Private
+ */
 router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.user });
-    if (!task) {
-      return res.status(404).json({ message: 'Task not found' });
-    }
-    res.json({ message: 'Task deleted' });
+    if (!task) return res.status(404).json({ message: 'Target mismatch: Objective not found' });
+    res.json({ message: 'Target neutralized: Data purged' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Purge failure: Deletion sequence aborted' });
   }
 });
 
-// Get task statistics
+/**
+ * @route   GET /api/tasks/stats
+ * @desc    Get task statistics with high performance aggregation
+ * @access  Private
+ */
 router.get('/stats', auth, async (req, res) => {
   try {
-    const tasks = await Task.find({ user: req.user });
+    const userId = new mongoose.Types.ObjectId(req.user);
+    const daysRange = parseInt(req.query.days) || 7;
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setDate(now.getDate() - daysRange + 1);
+    startDate.setHours(0, 0, 0, 0);
+
+    const [statsResult, activityResult, categoryResult] = await Promise.all([
+      Task.aggregate([
+        { $match: { user: userId } },
+        {
+          $facet: {
+            basic: [
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: 1 },
+                  pending: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } },
+                  inProgress: { $sum: { $cond: [{ $eq: ['$status', 'in-progress'] }, 1, 0] } },
+                  completed: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } },
+                  highPriority: { $sum: { $cond: [{ $eq: ['$priority', 'high'] }, 1, 0] } }
+                }
+              }
+            ],
+            overdue: [
+              {
+                $match: {
+                  status: { $ne: 'completed' },
+                  dueDate: { $ne: null, $lt: now }
+                }
+              },
+              { $count: 'count' }
+            ]
+          }
+        }
+      ]),
+      Task.aggregate([
+        { $match: { user: userId, createdAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { _id: 1 } }
+      ]),
+      Task.aggregate([
+        { $match: { user: userId } },
+        { $group: { _id: "$category", count: { $sum: 1 } } }
+      ])
+    ]);
+
+    const result = statsResult[0];
+    const basicStats = result.basic[0] || {
+      total: 0,
+      pending: 0,
+      inProgress: 0,
+      completed: 0,
+      highPriority: 0
+    };
+    const overdueCount = result.overdue[0]?.count || 0;
 
     const stats = {
-      total: tasks.length,
-      pending: tasks.filter(t => t.status === 'pending').length,
-      inProgress: tasks.filter(t => t.status === 'in-progress').length,
-      completed: tasks.filter(t => t.status === 'completed').length,
-      highPriority: tasks.filter(t => t.priority === 'high').length,
-      mediumPriority: tasks.filter(t => t.priority === 'medium').length,
-      lowPriority: tasks.filter(t => t.priority === 'low').length,
-      overdue: tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed').length,
-      categories: {},
+      ...basicStats,
+      overdue: overdueCount,
+      categories: {}
     };
 
-    // Count tasks by category
-    tasks.forEach(task => {
-      const cat = task.category || 'general';
-      stats.categories[cat] = (stats.categories[cat] || 0) + 1;
+    categoryResult.forEach(c => {
+      stats.categories[c._id || 'general'] = c.count;
     });
 
-    // Dynamic Activity Scan (Days based on query parameter)
-    const daysRange = parseInt(req.query.days) || 7;
-    const activityData = [];
+    const activityMap = new Map();
+    activityResult.forEach(a => activityMap.set(a._id, a.count));
 
+    const activityData = [];
     for (let i = daysRange - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      d.setHours(0, 0, 0, 0);
-
-      const nextD = new Date(d);
-      nextD.setDate(nextD.getDate() + 1);
-
-      const count = tasks.filter(t => {
-        const createDate = new Date(t.createdAt);
-        return createDate >= d && createDate < nextD;
-      }).length;
+      const dateStr = d.toISOString().split('T')[0];
 
       activityData.push({
         name: daysRange > 14
           ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
           : d.toLocaleDateString(undefined, { weekday: 'short' }),
-        count
+        count: activityMap.get(dateStr) || 0
       });
     }
 
     stats.activity = activityData;
-
     res.json(stats);
   } catch (error) {
+    console.error('Stats Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

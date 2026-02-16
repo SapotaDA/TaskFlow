@@ -44,6 +44,19 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  // Email change fields
+  newEmail: {
+    type: String,
+    default: null,
+  },
+  newEmailOtp: {
+    type: String,
+    default: null,
+  },
+  newEmailOtpExpire: {
+    type: Date,
+    default: null,
+  },
   lastSeen: {
     type: Date,
     default: Date.now,

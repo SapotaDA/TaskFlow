@@ -20,4 +20,30 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Enable rollup chunk splitting for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks for better caching
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-charts': ['recharts'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+    // Chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    // Minify with esbuild (default, faster than terser)
+    minify: 'esbuild',
+    // Generate source maps for production debugging
+    sourcemap: false,
+    // Optimize CSS
+    cssCodeSplit: true,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'recharts', 'lucide-react'],
+  },
 })

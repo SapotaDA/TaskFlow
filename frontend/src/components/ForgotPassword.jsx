@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import api from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import PageBackground from './ui/PageBackground';
-import Card from './ui/Card';
 import Input from './ui/Input';
 import Button from './ui/Button';
-import { CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ShieldAlert, ArrowLeft, Mail, Command } from 'lucide-react';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -13,8 +13,6 @@ const ForgotPassword = () => {
     const [message, setMessage] = useState({ type: '', text: '' });
 
     const navigate = useNavigate();
-
-    /* ---------------- SEND OTP VIA EMAIL ---------------- */
 
     const handleRequest = async (e) => {
         e.preventDefault();
@@ -26,112 +24,142 @@ const ForgotPassword = () => {
 
             setMessage({
                 type: 'success',
-                text: res.data.message || 'OTP sent to your email.'
+                text: res.data.message || 'OTP sequence transmitted successfully.'
             });
 
-            // move to reset password page
             setTimeout(() => {
                 navigate(`/reset-password?email=${email}`);
-            }, 1500);
+            }, 1800);
 
         } catch (err) {
             setMessage({
                 type: 'error',
-                text:
-                    err.response?.data?.message ||
-                    'Failed to send OTP. Try again.'
+                text: err.response?.data?.message || 'Transmission failure: Verify address.'
             });
         } finally {
             setStatus('idle');
         }
     };
 
-    /* ================= UI ================= */
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 15 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }
+    };
 
     return (
-        <PageBackground gradient="bg-gradient-to-br from-[#020305] via-slate-900 to-black">
-            <div className="min-h-screen flex items-center justify-center px-4">
-                <Card className="w-full max-w-4xl bg-[#0c0d10]/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
-
-                    <div className="flex flex-col md:flex-row">
-
-                        {/* LEFT PANEL */}
-                        <div className="hidden md:flex w-1/2 flex-col justify-between p-10 bg-white/5 border-r border-white/10">
-                            <div>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                                        <span className="text-black font-bold text-sm">TF</span>
-                                    </div>
-                                    <span className="text-white font-semibold">TaskFlow</span>
-                                </div>
-
-                                <h2 className="text-3xl font-bold text-white mb-4">
-                                    Reset your password
-                                </h2>
-                                <p className="text-white/40">
-                                    We'll send a secure OTP to your email to reset your password.
-                                </p>
+        <PageBackground
+            gradient="bg-gradient-to-br from-[#020305] via-[#050608] to-black"
+            blob1="bg-blue-600/5"
+            blob2="bg-purple-600/5"
+            blob3="bg-slate-700/5"
+        >
+            <div className="min-h-screen flex flex-col md:flex-row">
+                {/* Left Side: Visual/Branding (Desktop Only) */}
+                <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-16 overflow-hidden">
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                                <span className="text-slate-950 font-black text-xs">TF</span>
                             </div>
-
-                            <div className="text-xs text-white/30">
-                                Secure email verification powered by TaskFlow.
-                            </div>
+                            <span className="text-white font-bold text-xl tracking-tight">Access Recovery</span>
                         </div>
 
-                        {/* RIGHT PANEL */}
-                        <div className="w-full md:w-1/2 p-8 md:p-12">
+                        <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
+                            Restore system <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">authorization.</span>
+                        </h2>
+                        <p className="text-lg text-white/30 max-w-sm font-medium leading-relaxed">
+                            Initialize the secure recovery sequence to regain access to your operational dashboard.
+                        </p>
+                    </div>
 
-                            <div className="mb-10">
-                                <h3 className="text-3xl font-bold text-white mb-2">
-                                    Forgot Password
-                                </h3>
-                                <p className="text-white/40">
-                                    Enter your email to receive a verification OTP.
-                                </p>
+                    <div className="relative z-10 flex gap-12">
+                        <div className="flex items-center gap-4 text-white/20">
+                            <ShieldAlert className="w-6 h-6" />
+                            <div className="h-8 w-px bg-white/10" />
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] max-w-[120px]">
+                                Secure OTP Transmission Protocol
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Decorations */}
+                    <div className="absolute top-1/4 -right-20 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full" />
+                </div>
+
+                {/* Right Side: Form */}
+                <div className="flex-1 flex items-center justify-center p-6 lg:p-16 relative">
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="w-full max-w-sm"
+                    >
+                        <motion.div variants={itemVariants} className="mb-10">
+                            <div className="lg:hidden flex items-center gap-3 mb-8">
+                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
+                                    <span className="text-slate-950 font-black text-xs">TF</span>
+                                </div>
+                                <span className="text-white font-bold text-xl tracking-tight">Recovery</span>
                             </div>
+                            <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Initialize Recovery</h3>
+                            <p className="text-xs text-white/30 font-bold uppercase tracking-widest leading-relaxed">
+                                Enter your registered network address to receive a secure authorization sequence.
+                            </p>
+                        </motion.div>
 
-                            <form onSubmit={handleRequest} className="space-y-6">
+                        <form onSubmit={handleRequest} className="space-y-6">
+                            {message.text && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`p-3.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider flex items-center gap-3 ${message.type === 'error'
+                                            ? 'bg-red-500/5 border-red-500/10 text-red-500'
+                                            : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
+                                        }`}
+                                >
+                                    <Command className="w-4 h-4" />
+                                    {message.text}
+                                </motion.div>
+                            )}
 
-                                {message.text && (
-                                    <div
-                                        className={`p-4 rounded-xl text-sm ${message.type === 'error'
-                                                ? 'bg-red-500/10 text-red-400'
-                                                : 'bg-emerald-500/10 text-emerald-400'
-                                            }`}
-                                    >
-                                        {message.text}
-                                    </div>
-                                )}
-
+                            <motion.div variants={itemVariants}>
                                 <Input
-                                    label="Email Address"
+                                    label="Network Address"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="you@email.com"
-                                    className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
+                                    placeholder="name@nexus.com"
                                     required
                                 />
+                            </motion.div>
 
+                            <motion.div variants={itemVariants} className="pt-2">
                                 <Button
                                     type="submit"
                                     isLoading={status === 'loading'}
-                                    className="w-full py-4 rounded-xl text-lg font-semibold bg-white text-black hover:bg-white/90"
+                                    className="w-full py-3"
                                 >
-                                    Send OTP
+                                    Transmit Recovery Key
                                 </Button>
+                            </motion.div>
 
-                                <Link
-                                    to="/login"
-                                    className="block text-center text-white/40 hover:text-white text-sm"
-                                >
-                                    Back to login
+                            <motion.div variants={itemVariants} className="text-center pt-8 border-t border-white/5 mt-6">
+                                <Link to="/login" className="inline-flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] hover:text-white transition-colors">
+                                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Security Portal
                                 </Link>
-                            </form>
+                            </motion.div>
+                        </form>
+                    </motion.div>
 
-                        </div>
-                    </div>
-                </Card>
+                    {/* Background decorations */}
+                    <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/5 blur-[100px] rounded-full translate-y-1/2 translate-x-1/2" />
+                </div>
             </div>
         </PageBackground>
     );

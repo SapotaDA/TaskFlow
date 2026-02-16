@@ -1,0 +1,16 @@
+{
+  "name": "TaskFlow",
+  "short_name": "TaskFlow",
+  "description": "A modern task management application to organize your projects, track progress, and boost productivity.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020305",
+  "theme_color": "#020305",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
