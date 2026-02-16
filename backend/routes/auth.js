@@ -354,8 +354,8 @@ router.put('/me', auth, [
       user: { id: user._id, name: user.name, email: user.email }
     });
   } catch (error) {
-    console.error('Update Profile Error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Update Profile Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
