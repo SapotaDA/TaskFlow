@@ -89,17 +89,10 @@ app.use('/api/notifications', notificationRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-  // Handle API 404s explicitly before catch-all
-  app.all('/api/*', (req, res) => {
-    res.status(404).json({ message: 'API route not found' });
-  });
-
-  // SPA catch-all
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  // Since frontend is hosted on Vercel, we don't serve static files here.
+  // Just return a message for the root URL so the server doesn't crash.
+  app.get('/', (req, res) => {
+    res.json({ message: 'TaskFlow API is running successfully' });
   });
 }
 
