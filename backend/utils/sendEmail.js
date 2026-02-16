@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // Create a transporter
+    // Create a transporter with increased timeouts
     const transporterConfig = {
         host: 'smtp.gmail.com',
         port: 465,
@@ -13,8 +13,12 @@ const sendEmail = async (options) => {
         tls: {
             rejectUnauthorized: false
         },
-        debug: true, // Enable debug logging
-        logger: true // Log to console
+        // Connection settings to prevent hangs
+        connectionTimeout: 15000, // Wait 15s for initial connection
+        greetingTimeout: 15000,   // Wait 15s for server greeting
+        socketTimeout: 30000,     // Wait 30s for data
+        debug: true,
+        logger: true
     };
 
     console.log(`MAILER_INIT: User=${process.env.EMAIL_USER}, PassLen=${process.env.EMAIL_PASS?.replace(/\s/g, '').length}`);
@@ -29,13 +33,13 @@ const sendEmail = async (options) => {
         html: options.html,
     };
 
-    // Send the email with a strict internal timeout
+    // Send the email with a generous internal timeout (30 seconds)
     try {
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SERVER_MAIL_TIMEOUT: Google is taking too long to respond. Check your Render firewall or Gmail settings.')), 10000)
+            setTimeout(() => reject(new Error('SERVER_MAIL_TIMEOUT: Google is taking too long (30s+). Check your Render firewall or Gmail settings.')), 30000)
         );
 
-        // Race the email sending against a 10-second timeout
+        // Race the email sending against a 30-second timeout
         await Promise.race([
             transporter.sendMail(mailOptions),
             timeoutPromise

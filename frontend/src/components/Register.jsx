@@ -141,8 +141,8 @@ const Register = () => {
                 </div>
                 <span className="text-white font-bold text-xl tracking-tight">TaskFlow</span>
               </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Protocol Initialization</h3>
-              <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Setup your operational identity.</p>
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Create Account</h3>
+              <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Start managing your tasks today.</p>
             </motion.div>
 
             {error && (
@@ -159,7 +159,7 @@ const Register = () => {
             <form onSubmit={handleSubmit} className="space-y-5">
               <motion.div variants={itemVariants}>
                 <Input
-                  label="Full Legal Name"
+                  label="Full Name"
                   id="name"
                   name="name"
                   placeholder="e.g. John Doe"
@@ -171,11 +171,11 @@ const Register = () => {
 
               <motion.div variants={itemVariants}>
                 <Input
-                  label="Network Identity (Email)"
+                  label="Email Address"
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="name@nexus.com"
+                  placeholder="name@example.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
@@ -185,7 +185,7 @@ const Register = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <motion.div variants={itemVariants}>
                   <Input
-                    label="Access Key"
+                    label="Password"
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
@@ -207,7 +207,7 @@ const Register = () => {
 
                 <motion.div variants={itemVariants}>
                   <Input
-                    label="Verify Key"
+                    label="Confirm Password"
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -234,15 +234,15 @@ const Register = () => {
                   isLoading={loading}
                   className="w-full py-3"
                 >
-                  Confirm Identity
+                  Sign Up
                 </Button>
               </motion.div>
 
               <motion.div variants={itemVariants} className="text-center pt-6 border-t border-white/5 mt-6">
                 <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
-                  Existing operator ID?{" "}
+                  Already have an account?{" "}
                   <Link to="/login" className="text-blue-400 hover:text-blue-300 transition-colors">
-                    Access Portal
+                    Sign in
                   </Link>
                 </p>
               </motion.div>

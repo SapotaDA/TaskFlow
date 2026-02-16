@@ -128,8 +128,8 @@ const Login = () => {
                 </div>
                 <span className="text-white font-bold text-xl tracking-tight">TaskFlow</span>
               </div>
-              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Member Authorization</h3>
-              <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Provide security credentials to proceed.</p>
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Welcome Back</h3>
+              <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Please sign in to continue.</p>
             </motion.div>
 
             {error && (
@@ -146,10 +146,10 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <motion.div variants={itemVariants}>
                 <Input
-                  label="Network Address"
+                  label="Email Address"
                   id="email"
                   type="email"
-                  placeholder="name@nexus.com"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -158,7 +158,7 @@ const Login = () => {
 
               <motion.div variants={itemVariants}>
                 <Input
-                  label="Password Sequence"
+                  label="Password"
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
@@ -185,11 +185,11 @@ const Login = () => {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-blue-500 focus:ring-blue-500/20"
                   />
-                  Remember Identity
+                  Remember me
                 </label>
 
                 <Link to="/forgot-password" title="Initialize Recovery" className="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-blue-300 transition-colors">
-                  Recovery Mode
+                  Forgot password?
                 </Link>
               </motion.div>
 
@@ -199,15 +199,15 @@ const Login = () => {
                   isLoading={loading}
                   className="w-full py-3"
                 >
-                  Authorize Access
+                  Sign In
                 </Button>
               </motion.div>
 
               <motion.div variants={itemVariants} className="text-center pt-6">
                 <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">
-                  New operator?{" "}
+                  Don't have an account?{" "}
                   <Link to="/register" className="text-purple-400 hover:text-purple-300 transition-colors">
-                    Initialize Protocol
+                    Sign up
                   </Link>
                 </p>
               </motion.div>

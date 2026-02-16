@@ -200,9 +200,9 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Operational Overview</span>
+              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Overview</span>
             </div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">System Dashboard</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">My Dashboard</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -241,7 +241,7 @@ const Dashboard = () => {
           <Suspense fallback={
             <div className="h-[400px] rounded-2xl border border-white/5 bg-white/[0.01] flex flex-col items-center justify-center animate-pulse">
               <Activity className="w-8 h-8 text-white/10 mb-4" />
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Loading Analytics Module...</span>
+              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Loading Analytics...</span>
             </div>
           }>
             <ChartSection
@@ -258,7 +258,7 @@ const Dashboard = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Query database..."
+                  placeholder="Search tasks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-11 pr-4 py-2.5 bg-transparent text-white placeholder-white/20 focus:outline-none font-bold text-[11px] uppercase tracking-widest transition-all"
@@ -270,9 +270,9 @@ const Dashboard = () => {
                   onChange={(e) => setStatusFilter(e.target.value)}
                   className="bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/50 focus:outline-none hover:bg-white/10 hover:text-white transition-all cursor-pointer appearance-none min-w-[130px]"
                 >
-                  <option value="" className="bg-slate-900">All Status</option>
+                  <option value="" className="bg-slate-900">All Statuses</option>
                   <option value="pending" className="bg-slate-900">Pending</option>
-                  <option value="in-progress" className="bg-slate-900">Active</option>
+                  <option value="in-progress" className="bg-slate-900">In Progress</option>
                   <option value="completed" className="bg-slate-900">Completed</option>
                 </select>
                 <select
@@ -280,7 +280,7 @@ const Dashboard = () => {
                   onChange={(e) => setPriorityFilter(e.target.value)}
                   className="bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white/50 focus:outline-none hover:bg-white/10 hover:text-white transition-all cursor-pointer appearance-none min-w-[130px]"
                 >
-                  <option value="" className="bg-slate-900">All Priority</option>
+                  <option value="" className="bg-slate-900">All Priorities</option>
                   <option value="low" className="bg-slate-900">Low</option>
                   <option value="medium" className="bg-slate-900">Medium</option>
                   <option value="high" className="bg-slate-900">High</option>
@@ -315,9 +315,9 @@ const Dashboard = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={confirmDelete}
-        title="Confirm Data Purge"
-        message="This action will permanently erase this operational record from the central database. Are you sure?"
-        confirmText="Confirm Purge"
+        title="Delete Task?"
+        message="Are you sure you want to delete this task? This cannot be undone."
+        confirmText="Yes, Delete"
         variant="danger"
       />
 
@@ -325,8 +325,8 @@ const Dashboard = () => {
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}
-        title="Session Termination"
-        message="Ending your current secure session. All unsaved configurations will be lost."
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
         confirmText="Sign Out"
         variant="danger"
       />

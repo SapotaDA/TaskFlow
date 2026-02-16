@@ -186,13 +186,13 @@ const Profile = () => {
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-slate-950 font-black text-xs">TF</span>
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">Identity Center</span>
+            <span className="text-white font-bold text-lg tracking-tight">My Profile</span>
           </div>
           <button
             onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2 text-[10px] font-bold text-white/40 uppercase tracking-widest hover:text-white transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Return to Dashboard</span>
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back to Dashboard</span>
           </button>
         </div>
       </nav>
@@ -201,9 +201,9 @@ const Profile = () => {
         <header className="mb-12">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
-            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Account Management</span>
+            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Settings</span>
           </div>
-          <h1 className="text-4xl font-bold text-white tracking-tight">Personal Parameters</h1>
+          <h1 className="text-4xl font-bold text-white tracking-tight">Profile Details</h1>
         </header>
 
         <div className="grid grid-cols-1 gap-8">
@@ -252,7 +252,7 @@ const Profile = () => {
                             <div>
                               <h4 className="text-sm font-bold text-white mb-1">Verify New Email</h4>
                               <p className="text-[10px] text-white/60 leading-relaxed">
-                                A security code has been sent to <strong>{formData.email}</strong>. Entering it will transfer your identity to this new address.
+                                A verification code has been sent to <strong>{formData.email}</strong>. Entering it will update your email address.
                               </p>
                             </div>
                           </div>
@@ -286,14 +286,14 @@ const Profile = () => {
                         <form onSubmit={handleSubmit} className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input
-                              label="Full Identity Name"
+                              label="Full Name"
                               name="name"
                               value={formData.name}
                               onChange={handleChange}
                               required
                             />
                             <Input
-                              label="Network Address"
+                              label="Email Address"
                               name="email"
                               type="email"
                               value={formData.email}
@@ -302,13 +302,13 @@ const Profile = () => {
                             />
                           </div>
                           <div className="flex gap-3 pt-2">
-                            <Button type="submit" isLoading={loading} className="px-6 py-2.5 !text-[10px]">Commit Changes</Button>
+                            <Button type="submit" isLoading={loading} className="px-6 py-2.5 !text-[10px]">Save Changes</Button>
                             <button
                               type="button"
                               onClick={() => setEditing(false)}
                               className="px-6 py-2.5 rounded-xl border border-white/10 text-[10px] font-bold text-white/30 uppercase tracking-widest hover:bg-white/5 transition-all"
                             >
-                              Abort
+                              Cancel
                             </button>
                           </div>
                         </form>
@@ -319,17 +319,17 @@ const Profile = () => {
                       <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
                         <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">Status</p>
                         <p className="text-xs font-bold text-emerald-400 flex items-center gap-2">
-                          <Zap className="w-3 h-3" /> Verified Operator
+                          <Zap className="w-3 h-3" /> Verified
                         </p>
                       </div>
                       <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
                         <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">Role</p>
                         <p className="text-xs font-bold text-white/60 flex items-center gap-2">
-                          <Shield className="w-3 h-3" /> System Admin
+                          <Shield className="w-3 h-3" /> Admin
                         </p>
                       </div>
                       <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                        <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">Authorization</p>
+                        <p className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-1">Security</p>
                         <p className="text-xs font-bold text-white/60 flex items-center gap-2">
                           <Terminal className="w-3 h-3" /> Encrypted
                         </p>
@@ -359,8 +359,8 @@ const Profile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <section className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl flex flex-col justify-between">
               <div>
-                <h4 className="text-lg font-bold text-white mb-2 tracking-tight">System Access</h4>
-                <p className="text-xs text-white/30 leading-relaxed mb-8">Terminate your active session and release all allocated resources from the current terminal.</p>
+                <h4 className="text-lg font-bold text-white mb-2 tracking-tight">Account Actions</h4>
+                <p className="text-xs text-white/30 leading-relaxed mb-8">Sign out of your account on this device.</p>
               </div>
               <Button onClick={() => setShowLogoutModal(true)} variant="secondary" className="w-full">
                 <LogOut className="w-4 h-4 mr-2" /> Sign Out
@@ -369,25 +369,25 @@ const Profile = () => {
 
             <section className="p-8 rounded-2xl bg-red-500/[0.01] border border-red-500/10 backdrop-blur-3xl flex flex-col justify-between group hover:border-red-500/20 transition-all">
               <div>
-                <h4 className="text-lg font-bold text-red-400 mb-2 tracking-tight">Danger Zone</h4>
-                <p className="text-xs text-red-400/30 leading-relaxed mb-8">Permanently purge your identity and all associated operational data from the central database.</p>
+                <h4 className="text-lg font-bold text-red-400 mb-2 tracking-tight">Delete Account</h4>
+                <p className="text-xs text-red-400/30 leading-relaxed mb-8">Permanently delete your account and all data. This action cannot be undone.</p>
               </div>
 
               {deleteStep === 'confirm' ? (
                 <Button variant="danger" onClick={() => setShowDeleteConfirm(true)} className="w-full">
-                  <Trash2 className="w-4 h-4 mr-2" /> Purge Account
+                  <Trash2 className="w-4 h-4 mr-2" /> Delete Account
                 </Button>
               ) : (
                 <form onSubmit={handleDeleteAccount} className="space-y-4">
                   <Input
                     label="Verification Code"
-                    placeholder="Enter Sequence"
+                    placeholder="Enter Code"
                     value={deleteOtp}
                     onChange={(e) => setDeleteOtp(e.target.value)}
                     required
                   />
                   {deleteError && <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest">{deleteError}</p>}
-                  <Button type="submit" variant="danger" isLoading={deleteLoading} className="w-full">Confirm Purge</Button>
+                  <Button type="submit" variant="danger" isLoading={deleteLoading} className="w-full">Confirm Delete</Button>
                 </form>
               )}
             </section>
@@ -404,9 +404,9 @@ const Profile = () => {
           setShowDeleteConfirm(false);
           requestDeleteOtp();
         }}
-        title="Confirm Data Purge"
-        message="This operation will permanently erase your identity and all task history from the network. This cannot be reversed."
-        confirmText="Initialize Verification"
+        title="Delete Account?"
+        message="This will permanently delete your account and all your tasks. This action cannot be reversed."
+        confirmText="Send Verification Code"
         variant="danger"
       />
 
@@ -417,8 +417,8 @@ const Profile = () => {
           logout();
           navigate('/login');
         }}
-        title="Session Termination"
-        message="Are you sure you want to end your secure session?"
+        title="Sign Out"
+        message="Are you sure you want to sign out?"
         confirmText="Sign Out"
         variant="danger"
       />

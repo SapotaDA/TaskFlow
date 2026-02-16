@@ -69,15 +69,15 @@ const ForgotPassword = () => {
                             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
                                 <span className="text-slate-950 font-black text-xs">TF</span>
                             </div>
-                            <span className="text-white font-bold text-xl tracking-tight">Access Recovery</span>
+                            <span className="text-white font-bold text-xl tracking-tight">Reset Password</span>
                         </div>
 
                         <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
-                            Restore system <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">authorization.</span>
+                            Did you forget your <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">password?</span>
                         </h2>
                         <p className="text-lg text-white/30 max-w-sm font-medium leading-relaxed">
-                            Initialize the secure recovery sequence to regain access to your operational dashboard.
+                            Don't worry, it happens. We'll help you reset it in no time.
                         </p>
                     </div>
 
@@ -86,7 +86,7 @@ const ForgotPassword = () => {
                             <ShieldAlert className="w-6 h-6" />
                             <div className="h-8 w-px bg-white/10" />
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] max-w-[120px]">
-                                Secure OTP Transmission Protocol
+                                Secure Request
                             </p>
                         </div>
                     </div>
@@ -110,9 +110,9 @@ const ForgotPassword = () => {
                                 </div>
                                 <span className="text-white font-bold text-xl tracking-tight">Recovery</span>
                             </div>
-                            <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Initialize Recovery</h3>
+                            <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Forgot Password?</h3>
                             <p className="text-xs text-white/30 font-bold uppercase tracking-widest leading-relaxed">
-                                Enter your registered network address to receive a secure authorization sequence.
+                                Enter your email address to verify your account.
                             </p>
                         </motion.div>
 
@@ -133,7 +133,7 @@ const ForgotPassword = () => {
 
                             <motion.div variants={itemVariants}>
                                 <Input
-                                    label="Network Address"
+                                    label="Email Address"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -148,13 +148,13 @@ const ForgotPassword = () => {
                                     isLoading={status === 'loading'}
                                     className="w-full py-3"
                                 >
-                                    Transmit Recovery Key
+                                    Send Reset Code
                                 </Button>
                             </motion.div>
 
                             <motion.div variants={itemVariants} className="text-center pt-8 border-t border-white/5 mt-6">
                                 <Link to="/login" className="inline-flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] hover:text-white transition-colors">
-                                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Security Portal
+                                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                                 </Link>
                             </motion.div>
                         </form>

@@ -87,15 +87,15 @@ const ResetPassword = () => {
                             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
                                 <span className="text-slate-950 font-black text-xs">TF</span>
                             </div>
-                            <span className="text-white font-bold text-xl tracking-tight">Security Protocol</span>
+                            <span className="text-white font-bold text-xl tracking-tight">Reset Password</span>
                         </div>
 
                         <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
-                            Recalibrate access <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">credentials.</span>
+                            Create new <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">password.</span>
                         </h2>
                         <p className="text-lg text-white/30 max-w-sm font-medium leading-relaxed">
-                            Complete the verification cycle to establish new security tokens for your identity.
+                            Please enter your verification code and new password to continue.
                         </p>
                     </div>
 
@@ -104,7 +104,7 @@ const ResetPassword = () => {
                             <ShieldCheck className="w-6 h-6" />
                             <div className="h-8 w-px bg-white/10" />
                             <p className="text-[10px] font-bold uppercase tracking-[0.2em] max-w-[120px]">
-                                Cryptographic Multi-Factor Verification
+                                Secure Reset
                             </p>
                         </div>
                     </div>
@@ -122,9 +122,9 @@ const ResetPassword = () => {
                         className="w-full max-w-sm"
                     >
                         <motion.div variants={itemVariants} className="mb-10">
-                            <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Configure Access</h3>
+                            <h3 className="text-2xl font-bold text-white tracking-tight mb-2">New Password</h3>
                             <p className="text-xs text-white/30 font-bold uppercase tracking-widest leading-relaxed">
-                                Updating access for <span className="text-blue-400">{maskEmail(email)}</span>
+                                Resetting password for <span className="text-blue-400">{maskEmail(email)}</span>
                             </p>
                         </motion.div>
 
@@ -134,8 +134,8 @@ const ResetPassword = () => {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className={`p-3.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider flex items-center gap-3 ${status === 'error'
-                                            ? 'bg-red-500/5 border-red-500/10 text-red-500'
-                                            : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
+                                        ? 'bg-red-500/5 border-red-500/10 text-red-500'
+                                        : 'bg-emerald-500/5 border-emerald-500/10 text-emerald-400'
                                         }`}
                                 >
                                     {status === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
@@ -147,7 +147,7 @@ const ResetPassword = () => {
                                 <motion.div variants={itemVariants}>
                                     <Input
                                         id="otp"
-                                        label="Verification Sequence"
+                                        label="Reset Code"
                                         placeholder="Enter 6-digit code"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
@@ -162,7 +162,7 @@ const ResetPassword = () => {
                                 <Input
                                     id="password"
                                     type="password"
-                                    label="New Security Sequence"
+                                    label="New Password"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -175,7 +175,7 @@ const ResetPassword = () => {
                                 <Input
                                     id="confirmPassword"
                                     type="password"
-                                    label="Confirm Sequence"
+                                    label="Confirm Password"
                                     placeholder="••••••••"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -190,13 +190,13 @@ const ResetPassword = () => {
                                     disabled={status === 'success'}
                                     className="w-full py-3"
                                 >
-                                    Update Credentials
+                                    Reset Password
                                 </Button>
                             </motion.div>
 
                             <motion.div variants={itemVariants} className="text-center pt-8 border-t border-white/5 mt-6">
                                 <Link to="/login" className="inline-flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] hover:text-white transition-colors">
-                                    <ArrowLeft className="w-3.5 h-3.5" /> Cancel Recalibration
+                                    <ArrowLeft className="w-3.5 h-3.5" /> Cancel
                                 </Link>
                             </motion.div>
                         </form>
