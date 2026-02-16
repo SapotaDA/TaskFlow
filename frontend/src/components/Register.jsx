@@ -1,6 +1,12 @@
-import { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import PageBackground from './ui/PageBackground';
+import Card from './ui/Card';
+import Input from './ui/Input';
+import Button from './ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Terminal, Shield, Cpu, Activity, Database, Eye, EyeOff, CheckCircle2, Globe, Command } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +19,19 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [nodeStats, setNodeStats] = useState({ latency: 12, data: 42.5 });
   const navigate = useNavigate();
   const { register } = useContext(AuthContext);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNodeStats(prev => ({
+        latency: Math.max(8, prev.latency + (Math.random() * 2 - 1)),
+        data: +(prev.data + (Math.random() * 0.4 - 0.2)).toFixed(1)
+      }));
+    }, 4500);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -29,13 +46,13 @@ const Register = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Credentials_Mismatch: Passkey sequence does not correlate');
       setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Complexity_Failure: Security token below target length');
       setLoading(false);
       return;
     }
@@ -44,166 +61,192 @@ const Register = () => {
       await register(formData.name, formData.email, formData.password);
       navigate('/dashboard');
     } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
+      setError(error.response?.data?.message || 'Initialization_Failure: Node creation rejected');
     } finally {
       setLoading(false);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="mx-auto h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center mb-4">
-            <span className="text-white font-bold text-lg">TF</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Join TaskFlow</h2>
-          <p className="text-slate-600">Create your account to get started</p>
-        </div>
+    <PageBackground
+      gradient="bg-gradient-to-br from-[#020305] via-slate-900 to-black"
+      blob1="bg-purple-600/10"
+      blob2="bg-blue-600/10"
+      blob3="bg-slate-700/10"
+    >
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="w-full max-w-6xl bg-[#0c0d10]/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                {error}
+          <div className="flex flex-col md:flex-row">
+
+            {/* LEFT PANEL */}
+            <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 bg-[#0a0b0e]/60 border-b md:border-b-0 md:border-r border-white/10">
+
+              {/* Logo */}
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                  <span className="text-slate-900 font-black text-lg">TF</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">TaskFlow</h1>
+                  <p className="text-xs text-white/40 uppercase tracking-widest">
+                    Node Genesis
+                  </p>
+                </div>
               </div>
-            )}
 
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
-                  Full Name
-                </label>
-                <input
+              {/* Heading */}
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                Create Account
+              </h2>
+              <p className="text-white/40 mb-10">
+                Setup your account and start managing workflows.
+              </p>
+
+              {/* FORM */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <Input
+                  label="Full Name"
                   id="name"
                   name="name"
-                  type="text"
-                  required
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your full name"
+                  placeholder="Enter your name"
                   value={formData.name}
                   onChange={handleChange}
+                  required
+                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
                 />
-              </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-                  Email address
-                </label>
-                <input
+                <Input
+                  label="Email"
                   id="email"
                   name="email"
                   type="email"
-                  required
-                  className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your email"
+                  placeholder="you@email.com"
                   value={formData.email}
                   onChange={handleChange}
+                  required
+                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
                 />
-              </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label="Password"
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    required
-                    className="w-full px-3 py-2.5 pr-10 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Create a password"
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
+                    required
+                    className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-white/40 hover:text-white"
+                      >
+                        {showPassword ? <EyeOff /> : <Eye />}
+                      </button>
+                    }
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-              </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-2">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <input
+                  <Input
+                    label="Confirm Password"
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    required
-                    className="w-full px-3 py-2.5 pr-10 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Confirm your password"
+                    placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    required
+                    className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="text-white/40 hover:text-white"
+                      >
+                        {showConfirmPassword ? <EyeOff /> : <Eye />}
+                      </button>
+                    }
                   />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
+                </div>
+
+                <Button
+                  type="submit"
+                  isLoading={loading}
+                  className="w-full py-4 rounded-xl text-lg font-semibold bg-white text-black hover:bg-white/90"
+                >
+                  Create Account
+                </Button>
+
+                <p className="text-center text-white/40 text-sm mt-6">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-purple-400 hover:underline">
+                    Login
+                  </Link>
+                </p>
+
+              </form>
+            </div>
+
+            {/* RIGHT PANEL */}
+            <div className="hidden md:flex w-1/2 bg-gradient-to-br from-purple-600/10 to-indigo-600/10 items-center justify-center p-12">
+              <div className="max-w-md">
+                <h2 className="text-4xl font-bold text-white mb-4">
+                  Join the Future of Work
+                </h2>
+                <p className="text-white/50 leading-relaxed text-lg font-medium">
+                  Experience a seamless task management system designed for modern teams. Secure, fast, and incredibly intuitive.
+                </p>
+                <div className="mt-12 space-y-6">
+                  <div className="flex items-center gap-4 text-white/40">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                      <Terminal className="w-5 h-5 text-indigo-400" />
+                    </div>
+                    <span className="font-semibold">Developer-First Experience</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-white/40">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                      <Globe className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <span className="font-semibold">Global Team Collaboration</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating account...
-                  </div>
-                ) : (
-                  'Create Account'
-                )}
-              </button>
-            </div>
-
-            <div className="text-center pt-4 border-t border-slate-100">
-              <Link
-                to="/login"
-                className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
-              >
-                Already have an account? Sign in
-              </Link>
-            </div>
-          </form>
-        </div>
+          </div>
+        </Card>
       </div>
-    </div>
+    </PageBackground>
   );
+
 };
+
 
 export default Register;

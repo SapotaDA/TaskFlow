@@ -1,135 +1,211 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import PageBackground from './ui/PageBackground';
+import Card from './ui/Card';
+import Input from './ui/Input';
+import Button from './ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, ShieldCheck, Terminal, Activity, Eye, EyeOff, Lock, Zap } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
+  const [metrics, setMetrics] = useState({ network: 99.1, active: 1420 });
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMetrics(prev => ({
+        network: +(prev.network + (Math.random() * 0.2 - 0.1)).toFixed(1),
+        active: prev.active + Math.floor(Math.random() * 3 - 1)
+      }));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
       await login(email, password);
+      if (rememberMe) {
+        localStorage.setItem('user_identity', email);
+      }
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Access_Denied: Invalid credentials sequence');
     } finally {
       setLoading(false);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="mx-auto h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center mb-4">
-            <span className="text-white font-bold text-lg">TF</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Welcome back</h2>
-          <p className="text-slate-600">Sign in to your TaskFlow account</p>
-        </div>
+    <PageBackground
+      gradient="bg-gradient-to-br from-[#020305] via-slate-900 to-black"
+      blob1="bg-blue-600/10"
+      blob2="bg-purple-600/10"
+      blob3="bg-slate-700/10"
+    >
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card className="w-full max-w-6xl bg-[#0c0d10]/90 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error}
+          <div className="flex flex-col md:flex-row">
+
+            {/* LEFT PANEL */}
+            <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 bg-[#0a0b0e]/60 border-b md:border-b-0 md:border-r border-white/10">
+
+              {/* Logo */}
+              <div className="flex items-center gap-4 mb-10">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                  <span className="text-slate-900 font-black text-lg">TF</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">TaskFlow</h1>
+                  <p className="text-xs text-white/40 tracking-widest uppercase">
+                    Simplify your workflow
+                  </p>
+                </div>
               </div>
-            )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+              {/* Heading */}
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                Welcome Back
+              </h2>
+              <p className="text-white/40 mb-10">
+                Login to access your dashboard and manage your workflow.
+              </p>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+              {/* FORM */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <Input
+                  label="Email"
+                  id="email"
+                  type="email"
+                  placeholder="you@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2.5 pr-10 bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Enter your password"
+                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
+                />
+
+                <Input
+                  label="Password"
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-white/5 border border-white/10 rounded-xl py-4 px-5"
+                  rightIcon={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-white/40 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  }
                 />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
+
+                {/* Remember + forgot */}
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2 text-white/60">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    Remember me
+                  </label>
+
+                  <Link to="/forgot-password" className="text-blue-400 hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  isLoading={loading}
+                  className="w-full py-4 rounded-xl text-lg font-semibold bg-white text-black hover:bg-white/90"
                 >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
+                  Login
+                </Button>
+
+                <p className="text-center text-white/40 text-sm mt-6">
+                  Don’t have an account?{" "}
+                  <Link to="/register" className="text-blue-400 hover:underline">
+                    Register
+                  </Link>
+                </p>
+
+              </form>
+            </div>
+
+            {/* RIGHT PANEL */}
+            <div className="hidden md:flex w-1/2 bg-gradient-to-br from-blue-600/10 to-purple-600/10 items-center justify-center p-12">
+              <div className="max-w-md">
+                <h2 className="text-4xl font-bold text-white mb-4">
+                  Manage Tasks Faster
+                </h2>
+                <p className="text-white/50 leading-relaxed text-lg font-medium">
+                  Track projects, collaborate with your team, and stay productive with TaskFlow’s smart workflow management system.
+                </p>
+                <div className="mt-12 space-y-6">
+                  <div className="flex items-center gap-4 text-white/40">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                      <Zap className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <span className="font-semibold">Lightning Fast Interface</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-white/40">
+                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                      <ShieldCheck className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <span className="font-semibold">Enterprise Grade Security</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Signing in...
-                  </div>
-                ) : (
-                  'Sign in'
-                )}
-              </button>
-            </div>
-
-            <div className="text-center pt-4 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => navigate('/register')}
-                className="text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
-              >
-                Don't have an account? Create one
-              </button>
-            </div>
-          </form>
-        </div>
+          </div>
+        </Card>
       </div>
-    </div>
+    </PageBackground>
   );
+
 };
 
 export default Login;

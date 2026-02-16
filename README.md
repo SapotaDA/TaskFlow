@@ -4,71 +4,60 @@ A full-stack task management application built with React, Node.js, Express, and
 
 ## Features
 
-- User authentication (register/login) with JWT
-- User profile management
-- Task CRUD operations (Create, Read, Update, Delete)
-- Task search and filtering
-- Protected routes with JWT middleware
-- Responsive UI with Tailwind CSS
+- **User Authentication**: Secure register/login with JWT and bcrypt hashing.
+- **Password Recovery**: Support for secure Email reset links and 6-digit OTP verification.
+- **Task Management**: Full CRUD operations with priorities, due dates, categories, and tags.
+- **Advanced Filtering**: Search and filter tasks by status, priority, and category.
+- **Security**: Rate limiting, MongoDB sanitization, and XSS protection.
+- **Premium UI**: Responsive design with Tailwind CSS, Framer Motion animations, and Toast notifications.
 
 ## Tech Stack
 
 ### Frontend
 - React (Vite)
 - Tailwind CSS
+- Framer Motion (Animations)
 - Axios for API calls
 - React Router for navigation
+- Lucide React (Icons)
 
 ### Backend
-- Node.js
-- Express.js
+- Node.js & Express.js
 - MongoDB with Mongoose
 - JWT for authentication
 - bcrypt for password hashing
+- Nodemailer (Email) for password recovery
+
 - express-validator for input validation
+- helmet & express-rate-limit for security
 
 ## Project Structure
 
 ```
 fullstack-assignment/
 ├── backend/
-│   ├── config/
-│   │   └── database.js
-│   ├── middleware/
-│   │   └── auth.js
-│   ├── models/
-│   │   ├── User.js
-│   │   └── Task.js
-│   ├── routes/
-│   │   ├── auth.js
-│   │   └── tasks.js
-│   ├── server.js
-│   ├── package.json
-│   └── .env
+│   ├── config/          # DB Connection
+│   ├── middleware/      # Auth, Rate Limiting, Sanitization
+│   ├── models/          # User & Task Schemas
+│   ├── routes/          # Auth & Task API Routes
+│   ├── utils/           # Email service
+│   └── server.js        # Entry Point
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   └── Profile.jsx
-│   │   ├── context/
-│   │   │   └── AuthContext.jsx
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── package.json
-│   ├── tailwind.config.js
+│   │   ├── components/  # Pages & UI Components
+│   │   ├── context/     # Auth & Toast Context
+│   │   ├── services/    # API (Axios) config
+│   │   └── App.jsx      # Root component
 │   └── vite.config.js
 └── README.md
 ```
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB (installed and running locally)
+- Node.js (v18 or higher)
+- MongoDB Atlas account or local installation
+- Gmail App Password (for email services)
+
 
 ## Installation
 
@@ -91,120 +80,51 @@ fullstack-assignment/
    ```
 
 4. Set up environment variables:
-   - Copy `backend/.env` and update the values if needed
-   - Default MongoDB URI: `mongodb://localhost:27017/fullstack-assignment`
-   - Default JWT Secret: `your_jwt_secret_here`
-   - Default Port: `5000`
+   - Create a `.env` file in the `backend/` directory (use `.env.example` as a template).
+   - Set `MONGO_URI`, `JWT_SECRET`, and `EMAIL` credentials.
 
 ## Running the Application
 
-1. Start MongoDB:
-   - On Windows: `net start MongoDB` (if installed as service)
-   - On macOS/Linux: `mongod`
-   - Or use MongoDB Compass/Atlas
-
-2. Start the backend server:
+1. Start the backend server:
    ```bash
    cd backend
-   npm start
+   npm run dev
    ```
-   Server will run on http://localhost:5000
+   Server will run on http://localhost:3001
 
-3. Start the frontend development server:
+2. Start the frontend development server:
    ```bash
    cd frontend
    npm run dev
    ```
    Frontend will run on http://localhost:5173
 
-4. Open your browser and navigate to http://localhost:5173
+3. Open your browser and navigate to http://localhost:5173
 
 ## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register a new user
 - `POST /api/auth/login` - Login user
+- `POST /api/auth/forgot-password` - Send reset link
+- `POST /api/auth/send-otp-email` - Send Email OTP
+- `POST /api/auth/verify-otp-identifier` - Verify OTP
+- `POST /api/auth/reset-password` - Reset password with token/OTP
+
 
 ### Tasks (Protected routes)
-- `GET /api/tasks` - Get all tasks for authenticated user
+- `GET /api/tasks` - Get all tasks (with filters)
 - `POST /api/tasks` - Create a new task
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
-
-### User Profile (Protected routes)
-- `GET /api/auth/me` - Get current user profile
-- `PUT /api/auth/me` - Update user profile
-
-## Testing the API
-
-You can test the API endpoints using Postman or curl:
-
-### Register User
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","email":"john@example.com","password":"password123"}'
-```
-
-### Login
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@example.com","password":"password123"}'
-```
-
-### Create Task (use token from login response)
-```bash
-curl -X POST http://localhost:5000/api/tasks \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{"title":"Sample Task","description":"This is a sample task","status":"pending"}'
-```
-
-## Features Overview
-
-### Authentication
-- Secure user registration and login
-- JWT-based authentication
-- Password hashing with bcrypt
-- Protected routes middleware
-
-### Task Management
-- Create, read, update, and delete tasks
-- Task status tracking (pending, in-progress, completed)
-- Search tasks by title or description
-- Filter tasks by status
-- User-specific task isolation
-
-### User Interface
-- Responsive design with Tailwind CSS
-- Clean and intuitive UI
-- Form validation
-- Error handling
-- Loading states
+- `GET /api/tasks/stats` - Get task statistics
 
 ## Security Features
 
-- Password hashing with bcrypt
-- JWT token authentication
-- Input validation and sanitization
-- CORS enabled
-- Error handling middleware
-
-## Development
-
-- Backend uses nodemon for development
-- Frontend uses Vite for fast development
-- ESLint for code linting
-- Modular code structure
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+- **Rate Limiting**: Protects auth and reset routes from brute-force.
+- **Sanitization**: Prevents NoSQL injection and XSS.
+- **Secure Tokens**: Uses SHA256 for password reset tokens.
+- **Simulation Mode**: Backend logs links/OTPs to console if API keys aren't provided.
 
 ## License
 

@@ -1,20 +1,77 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Profile from './components/Profile';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import { AuthContext } from './context/AuthContext';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const AnimatedRoutes = () => {
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/dashboard" /> : <Login />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/dashboard" /> : <Register />}
+        />
+        <Route
+          path="/forgot-password"
+          element={user ? <Navigate to="/dashboard" /> : <ForgotPassword />}
+        />
+        <Route
+          path="/reset-password"
+          element={user ? <Navigate to="/dashboard" /> : <ResetPassword />}
+        />
+        <Route
+          path="/dashboard"
+          element={user ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/profile"
+          element={user ? <Profile /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/"
+          element={<Navigate to={user ? "/dashboard" : "/login"} />}
+        />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 function App() {
-  const { user, loading } = useContext(AuthContext);
+  const { loading } = useContext(AuthContext);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="rounded-2xl p-8 text-center">
-          <div className="w-12 h-12 border-4 border-gray-300 border-t-transparent rounded-full mx-auto mb-4 animate-spin" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
+      <div className="min-h-screen bg-[#020305] flex items-center justify-center p-6">
+        <div className="relative">
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-16 h-16 border-2 border-white/5 border-t-white rounded-2xl shadow-3xl"
+          />
+          <div className="mt-8 text-center">
+            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] animate-pulse">Initializing_Sync</h2>
+            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mt-2">Connecting to secure node...</p>
+          </div>
         </div>
       </div>
     );
@@ -22,29 +79,8 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route
-            path="/login"
-            element={user ? <Navigate to="/dashboard" /> : <Login />}
-          />
-          <Route
-            path="/register"
-            element={user ? <Navigate to="/dashboard" /> : <Register />}
-          />
-          <Route
-            path="/dashboard"
-            element={user ? <Dashboard /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/profile"
-            element={user ? <Profile /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/"
-            element={<Navigate to={user ? "/dashboard" : "/login"} />}
-          />
-        </Routes>
+      <div className="App selection:bg-blue-500/30">
+        <AnimatedRoutes />
       </div>
     </Router>
   );

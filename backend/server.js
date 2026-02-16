@@ -4,6 +4,12 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+const sanitize = require('./middleware/sanitize');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
+const { apiLimiter } = require('./middleware/rateLimiter');
+
 
 dotenv.config();
 
@@ -21,23 +27,57 @@ connectDB().then(() => {
 });
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(helmet()); // Security headers
+app.use(compression()); // Compress responses
+app.use(morgan('dev')); // Logging
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Frontend URL
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10kb' })); // Limit body size to prevent DoS
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Apply sanitization middleware
+app.use(sanitize);
+
+// Apply global rate limiting to all API routes
+app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+
 app.use('/api/tasks', taskRoutes);
 
-// Error handling middleware
+// JSON parsing error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('JSON Parsing Error:', err.message);
+    return res.status(400).json({ message: 'Invalid JSON format', error: err.message });
+  }
+
+  console.error('Server Error:', err.message);
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-const PORT = process.env.PORT || 5000;
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3001;
+
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Stop the other process or set PORT in .env.`);
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
 });
 
 module.exports = app;

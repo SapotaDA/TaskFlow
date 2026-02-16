@@ -1,122 +1,400 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const sendEmail = require('../utils/sendEmail');
+const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
+
+
 
 const router = express.Router();
 
-// Register user
-router.post('/register', [
+/**
+ * @desc    Register user
+ * @route   POST /api/auth/register
+ */
+router.post('/register', authLimiter, [
+
   body('name').notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { name, email, password } = req.body;
 
   try {
-    // Check if user exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
+    if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-    // Create user
     const user = new User({ name, email, password });
     await user.save();
 
-    // Generate JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Register Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
-// Login user
-router.post('/login', [
+/**
+ * @desc    Login user
+ * @route   POST /api/auth/login
+ */
+router.post('/login', authLimiter, [
+
   body('email').isEmail().withMessage('Please provide a valid email'),
   body('password').exists().withMessage('Password is required'),
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) {
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate JWT
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (error) {
+    console.error('Login Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+/**
+ * @desc    Forgot password - Email Link
+ * @route   POST /api/auth/forgot-password
+ */
+router.post('/forgot-password', passwordResetLimiter, [
+
+  body('email').isEmail().withMessage('Please provide a valid email'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.json({ message: 'If an account exists, a reset link has been sent' });
+
+    const resetToken = user.getResetPasswordToken();
+    await user.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || `${req.protocol}://localhost:5173`;
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+    const message = `You are receiving this email because you requested a password reset. Please click: \n\n ${resetUrl}`;
+
+    try {
+      // DEV SIMULATION MODE
+      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
+        console.log('--- DEV SIMULATION: EMAIL RESET LINK ---');
+        console.log(`To: ${user.email}`);
+        console.log(`Link: ${resetUrl}`);
+        console.log('----------------------------------------');
+        return res.json({ message: 'DEV MODE: Reset link logged to server console' });
+      }
+
+      await sendEmail({
+        email: user.email,
+        subject: 'Password Reset Request - TaskFlow',
+        message,
+        html: `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 0;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: bold;">TaskFlow</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Password Reset Request</p>
+            </div>
+            <!-- Content -->
+            <div style="background: #f8f9fa; padding: 40px 20px;">
+              <div style="background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">Hello <strong>${user.name}</strong>,</p>
+                <p style="color: #666; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">We received a request to reset your password. Click the button below to set a new password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 14px 40px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; transition: opacity 0.3s;">Reset Password</a>
+                </div>
+                <p style="color: #999; font-size: 13px; line-height: 1.6; margin: 30px 0 0 0; padding-top: 20px; border-top: 1px solid #eee;">
+                  <strong>Important:</strong> This link will expire in 10 minutes. If you did not request this, please ignore this email.
+                </p>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div style="background: #2d3748; color: #cbd5e0; padding: 20px; text-align: center; font-size: 12px;">
+              <p style="margin: 0 0 8px 0;">© ${new Date().getFullYear()} TaskFlow. All rights reserved.</p>
+              <p style="margin: 0; color: #a0aec0;">This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        `,
+      });
+      res.json({ message: 'Reset link sent to your email' });
+    } catch (err) {
+      console.error('Nodemailer Error:', err.message);
+      user.resetPasswordToken = null;
+      user.resetPasswordExpire = null;
+      await user.save();
+      res.status(500).json({ message: 'Email could not be sent', error: err.message });
+    }
+  } catch (error) {
+    console.error('Forgot Password Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+/**
+ * @desc    Forgot Password - Send OTP (Email Only)
+ * @route   POST /api/auth/send-otp-email
+ */
+router.post('/send-otp-email', passwordResetLimiter, [
+
+  body('email').isEmail().withMessage('A valid email address is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ message: 'If an account exists, an OTP will be sent' });
+    }
+
+    const otp = user.getOTP();
+    await user.save();
+
+    try {
+      // Send OTP via email (DEV SIMULATION MODE)
+      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
+        console.log('\n=== DEV SIMULATION: EMAIL OTP ===');
+        console.log(`To: ${user.email}`);
+        console.log(`OTP: ${otp}`);
+        console.log(`Expires: 10 minutes`);
+        console.log('===================================\n');
+        return res.json({ message: 'DEV MODE: OTP logged to server console' });
+      }
+
+      await sendEmail({
+        email: user.email,
+        subject: 'Password Reset OTP - TaskFlow',
+        message: `Your TaskFlow password reset OTP is: ${otp}. This code will expire in 10 minutes.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+            <h2>Password Reset OTP</h2>
+            <p>Hello ${user.name},</p>
+            <p>Your OTP for password reset is: <strong style="font-size: 24px; letter-spacing: 4px;">${otp}</strong></p>
+            <p>This code will expire in 10 minutes.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+        `,
+      });
+      res.json({ message: 'OTP sent to your email' });
+    } catch (err) {
+      console.error('Send OTP Error:', err.message);
+      user.otp = null;
+      user.otpExpire = null;
+      await user.save();
+      res.status(500).json({ message: 'Email service authentication failed', error: err.message });
+    }
+  } catch (error) {
+    console.error('Forgot Password OTP Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+/**
+ * @desc    Verify OTP (Email Only)
+ * @route   POST /api/auth/verify-otp-identifier
+ */
+router.post('/verify-otp-identifier', passwordResetLimiter, [
+
+  body('identifier').isEmail().withMessage('Email is required'),
+  body('otp').notEmpty().withMessage('OTP is required').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { identifier, otp } = req.body;
+
+  try {
+    const user = await User.findOne({
+      email: identifier,
+      otp,
+      otpExpire: { $gt: Date.now() },
+    });
+
+    if (!user) return res.status(400).json({ message: 'Invalid or expired OTP' });
+
+    // Generate a temporary reset token to allow password change
+    const resetToken = user.getResetPasswordToken();
+    await user.save();
+
+    console.log(`OTP verified for user: ${identifier}`);
+    res.json({ message: 'OTP verified successfully', resetToken });
+  } catch (error) {
+    console.error('Verify OTP Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+
+
+/**
+ * @desc    Reset Password
+ * @route   POST /api/auth/reset-password
+ */
+router.post('/reset-password', passwordResetLimiter, [
+
+  body('token').notEmpty().withMessage('Token is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { token, password } = req.body;
+
+  try {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+
+    user.password = password; // Password will be hashed by pre-save middleware
+    user.resetPasswordToken = null;
+    user.resetPasswordExpire = null;
+    user.otp = null;
+    user.otpExpire = null;
+    await user.save();
+
+    res.json({ message: 'Password reset successful' });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get current user profile
+/**
+ * @desc    Get Current User
+ */
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
     res.json({ user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Update current user profile
-router.put('/me', [
-  auth,
-  body('name').optional().notEmpty().withMessage('Name cannot be empty'),
-  body('email').optional().isEmail().withMessage('Please provide a valid email'),
+/**
+ * @desc    Update Profile
+ * @route   PUT /api/auth/me
+ */
+router.put('/me', auth, [
+  body('name').notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Please provide a valid email'),
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { name, email } = req.body;
 
   try {
-    const updates = {};
-    if (req.body.name !== undefined) updates.name = req.body.name;
-    if (req.body.email !== undefined) updates.email = req.body.email;
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const user = await User.findByIdAndUpdate(req.user, updates, {
-      new: true,
-      runValidators: true,
-    }).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Check if email is already taken by another user
+    if (email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) return res.status(400).json({ message: 'Email already in use' });
     }
 
-    res.json({ user: { id: user._id, name: user.name, email: user.email } });
+    user.name = name;
+    user.email = email;
+    await user.save();
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: { id: user._id, name: user.name, email: user.email }
+    });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ message: 'Email already in use' });
-    }
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+/**
+ * @desc    Send OTP for Account Deletion (Email Only)
+ * @route   POST /api/auth/delete-account-otp
+ */
+router.post('/delete-account-otp', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Generate OTP
+    const otp = user.getOTP();
+    await user.save();
+
+    // DEV SIMULATION MODE
+    if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
+      console.log('\n=== DEV SIMULATION: DELETE ACCOUNT OTP ===');
+      console.log(`To: ${user.email}`);
+      console.log(`OTP: ${otp}`);
+      console.log(`Expires: 10 minutes`);
+      console.log('==========================================\n');
+      return res.json({ message: 'DEV MODE: OTP logged to server console' });
+    }
+
+    await sendEmail({
+      email: user.email,
+      subject: 'Account Deletion OTP - TaskFlow',
+      message: `Your TaskFlow account deletion OTP is: ${otp}. This code will expire in 10 minutes.`,
+    });
+    return res.json({ message: 'Verification code sent to your email' });
+  } catch (error) {
+    console.error('Delete Account OTP Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+/**
+ * @desc    Delete Account (verify OTP and delete)
+ * @route   POST /api/auth/delete-account
+ */
+router.post('/delete-account', auth, [
+  body('otp').notEmpty().withMessage('OTP is required').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  const { otp } = req.body;
+
+  try {
+    const user = await User.findById(req.user);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Verify OTP
+    if (user.otp !== otp || !user.otpExpire || user.otpExpire < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(req.user);
+
+    console.log(`Account deleted for user: ${user.email}`);
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete Account Error:', error.message);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
