@@ -175,10 +175,8 @@ router.post('/send-otp-email', passwordResetLimiter, [
       });
       res.json({ message: 'OTP sent to your email' });
     } catch (err) {
-      console.error('Send OTP Error:', err.message);
-      user.otp = null;
-      user.otpExpire = null;
-      await user.save();
+      console.error('Send OTP Error Detail:', err);
+      // We don't save null values here to minimize response time in error states
       res.status(500).json({
         message: 'Email Transmission Error',
         error: `SMTP_DIAGNOSTIC: ${err.message}`

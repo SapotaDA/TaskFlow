@@ -6,18 +6,22 @@ const sendEmail = async (options) => {
     const emailPass = (process.env.EMAIL_PASS || '').replace(/\s/g, '');
 
     const transporterConfig = {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587, // Use port 587 for STARTTLS
+        secure: false, // Use STARTTLS, so secure is false
+        requireTLS: true, // Explicitly require STARTTLS
         auth: {
             user: emailUser,
             pass: emailPass,
+            authMethod: 'LOGIN' // Explicit authMethod
         },
         tls: {
             rejectUnauthorized: false,
         },
-        family: 4,
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 25000,
+        family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         debug: true,
         logger: true
     };
