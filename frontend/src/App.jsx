@@ -13,7 +13,7 @@ const ResetPassword = lazy(() => import('./components/ResetPassword'));
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="min-h-[60vh] flex items-center justify-center p-6">
+  <div className="min-h-[70vh] flex items-center justify-center p-6">
     <motion.div
       animate={{
         rotate: 360
@@ -75,21 +75,22 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#020305] flex items-center justify-center p-6">
-        <div className="relative">
+      <div className="min-h-screen bg-[#020305] flex items-center justify-center p-6 select-none">
+        <div className="flex flex-col items-center">
           <motion.div
             animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 180, 360]
+              scale: [1, 1.1, 1],
+              rotate: [0, 180, 360],
+              borderRadius: ["20%", "50%", "20%"]
             }}
             transition={{
-              duration: 2,
+              duration: 2.5,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="w-16 h-16 border-2 border-white/5 border-t-white rounded-2xl shadow-3xl"
+            className="w-12 h-12 border-2 border-white/10 border-t-white rounded-2xl shadow-2xl mb-8"
           />
-          <div className="mt-8 text-center">
+          <div className="text-center">
             <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] animate-pulse">Initializing_Sync</h2>
             <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mt-2">Connecting to secure node...</p>
           </div>
