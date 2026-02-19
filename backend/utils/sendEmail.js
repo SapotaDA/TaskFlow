@@ -2,47 +2,47 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
     // Use 'service: gmail' which handles host/port automatically
+    const emailUser = process.env.EMAIL_USER || '';
+    const emailPass = (process.env.EMAIL_PASS || '').replace(/\s/g, '');
+
     const transporterConfig = {
         host: 'smtp.gmail.com',
         port: 587,
         secure: false, // use TLS
         auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
+            user: emailUser,
+            pass: emailPass,
         },
         tls: {
-            // Do not fail on invalid certs
             rejectUnauthorized: false,
-            // Google often requires this explicitly
             requireTLS: true
         },
-        family: 4, // Force IPv4 to prevent connection issues on platforms like Render
-        connectionTimeout: 40000,
-        greetingTimeout: 40000,
-        socketTimeout: 60000,
+        family: 4,
+        connectionTimeout: 20000,
+        greetingTimeout: 20000,
+        socketTimeout: 25000,
         debug: true,
         logger: true
     };
 
-    console.log(`MAILER_INIT: User=${process.env.EMAIL_USER}, PassLen=${process.env.EMAIL_PASS?.replace(/\s/g, '').length}`);
+    console.log(`MAILER_INIT: User=${emailUser}, PassLen=${emailPass.length}`);
     const transporter = nodemailer.createTransport(transporterConfig);
 
     // Define email options
     const mailOptions = {
-        from: `TaskFlow <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+        from: `TaskFlow <${process.env.EMAIL_FROM || emailUser}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
         html: options.html,
     };
 
-    // Send the email with a generous internal timeout (30 seconds)
+    // Send the email with a timeout shorter than Render's gateway (30s)
     try {
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SERVER_MAIL_TIMEOUT: Handshake with Gmail took over 50s. MANUAL FIX REQUIRED: Ensure you have 2-Step Verification ON and are using a 16-character APP PASSWORD, not your regular Gmail password.')), 50000)
+            setTimeout(() => reject(new Error('MAIL_TIMEOUT: SMTP handshake exceeded 25s. Action Required: Check your Google App Password and 2FA settings.')), 25000)
         );
 
-        // Race the email sending against a 50-second timeout
         await Promise.race([
             transporter.sendMail(mailOptions),
             timeoutPromise
@@ -50,10 +50,7 @@ const sendEmail = async (options) => {
 
         console.log('Email sent successfully');
     } catch (error) {
-        console.error('Nodemailer Error:', {
-            message: error.message,
-            code: error.code
-        });
+        console.error('Nodemailer Error:', error.message);
         throw error;
     }
 };
