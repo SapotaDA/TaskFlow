@@ -33,7 +33,7 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12 animate-page-fade">
             {/* Activity Chart */}
-            <div className="lg:col-span-8 p-6 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl group hover:border-white/10 transition-all duration-500">
+            <div className="lg:col-span-8 p-6 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl group hover:border-white/10 transition-all duration-500 min-w-0">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -56,7 +56,7 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                 </div>
 
                 <div className="h-[280px] w-full mt-4 relative min-h-[280px] overflow-hidden">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                         <AreaChart data={stats.activity || []} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
@@ -93,7 +93,7 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
             </div>
 
             {/* Status Distribution */}
-            <div className="lg:col-span-4 p-6 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl group hover:border-white/10 transition-all duration-500 flex flex-col">
+            <div className="lg:col-span-4 p-6 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl group hover:border-white/10 transition-all duration-500 flex flex-col min-w-0">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-500/10 rounded-lg">
@@ -106,7 +106,7 @@ const ChartSection = ({ stats, analyticsRange, setAnalyticsRange }) => {
                     </div>
                 </div>
                 <div className="h-[200px] w-full relative mt-4 min-h-[200px] overflow-hidden">
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <ResponsiveContainer width="100%" height="100%" debounce={50}>
                         <PieChart>
                             <Pie
                                 data={pieData}
