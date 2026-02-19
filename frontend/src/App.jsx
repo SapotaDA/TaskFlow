@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useContext, lazy, Suspense } from 'react';
+import { useContext, useEffect, lazy, Suspense } from 'react';
 import { AuthContext } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
