@@ -9,35 +9,35 @@ import Button from './Button';
 const steps = [
     {
         title: "Welcome to TaskFlow",
-        description: "Your new command center for productivity. Experience a streamlined workflow designed for high-performance individuals.",
+        description: "Your new home for organizing tasks. We've designed this to help you get more done with less stress.",
         icon: <Rocket className="w-8 h-8 text-blue-400" />,
         color: "from-blue-500/20 to-indigo-500/20",
         accent: "bg-blue-500"
     },
     {
-        title: "Dynamic Management",
-        description: "Effortlessly create, edit, and organize tasks. Use priorities and status tags to keep your focus where it matters most.",
+        title: "Manage Tasks",
+        description: "Easily create, edit, and organize your work. Use priority levels and status tags to keep track of what's important.",
         icon: <Target className="w-8 h-8 text-emerald-400" />,
         color: "from-emerald-500/20 to-teal-500/20",
         accent: "bg-emerald-500"
     },
     {
-        title: "Real-time Analytics",
-        description: "Knowledge is power. Monitor your completion rates and productivity trends with our built-in analytics engine.",
+        title: "Track Progress",
+        description: "See how well you're doing. Check your completion rates and task trends with our simple charts.",
         icon: <BarChart3 className="w-8 h-8 text-purple-400" />,
         color: "from-purple-500/20 to-pink-500/20",
         accent: "bg-purple-500"
     },
     {
-        title: "Intelligent Network",
-        description: "Never miss a beat. Our notification system keeps you synchronized with deadlines and important system events.",
+        title: "Stay Notified",
+        description: "Never miss a deadline. Our notification system keeps you updated on your tasks and important events.",
         icon: <Bell className="w-8 h-8 text-amber-400" />,
         color: "from-amber-500/20 to-orange-500/20",
         accent: "bg-amber-500"
     },
     {
-        title: "Premium Identity",
-        description: "Make it yours. Upload a profile picture, manage security credentials, and tailor your experience in the Profile Center.",
+        title: "Your Profile",
+        description: "Personalize your account. Upload a profile picture and manage your security settings easily.",
         icon: <Sparkles className="w-8 h-8 text-blue-400" />,
         color: "from-blue-400/20 to-cyan-400/20",
         accent: "bg-blue-400"

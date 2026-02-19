@@ -96,11 +96,11 @@ const Register = () => {
             </div>
 
             <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
-              Join the elite <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">productivity network.</span>
+              Join our <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">community.</span>
             </h2>
             <p className="text-lg text-white/30 max-w-sm font-medium leading-relaxed">
-              Initialize your profile and gain access to surgical-grade task management orchestration.
+              Create your account and start organizing your tasks in seconds.
             </p>
           </div>
 

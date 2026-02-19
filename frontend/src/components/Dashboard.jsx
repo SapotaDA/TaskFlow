@@ -251,9 +251,9 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Overview</span>
+              <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Summary</span>
             </div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">My Dashboard</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">Main Dashboard</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -292,7 +292,7 @@ const Dashboard = () => {
           <Suspense fallback={
             <div className="h-[400px] rounded-2xl border border-white/5 bg-white/[0.01] flex flex-col items-center justify-center animate-pulse">
               <Activity className="w-8 h-8 text-white/10 mb-4" />
-              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Loading Analytics...</span>
+              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Loading stats...</span>
             </div>
           }>
             <ChartSection

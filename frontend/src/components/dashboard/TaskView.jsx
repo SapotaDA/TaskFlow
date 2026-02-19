@@ -23,8 +23,8 @@ const TaskView = ({
                 <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-2xl overflow-hidden group">
                     <Clipboard className="w-8 h-8 text-white/10 group-hover:text-blue-400 transition-colors duration-500" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Deployment Empty</h3>
-                <p className="text-white/30 text-sm max-w-xs mx-auto">No matching tasks found in the database. Initialize a new sequence to begin.</p>
+                <h3 className="text-xl font-bold text-white mb-2 tracking-tight">No tasks found</h3>
+                <p className="text-white/30 text-sm max-w-xs mx-auto">You haven't added any tasks yet. Click the button above to create one.</p>
             </div>
         );
     }

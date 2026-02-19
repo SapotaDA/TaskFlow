@@ -32,9 +32,9 @@ const TaskForm = ({
                         <div className="p-6 sm:p-8 pb-3 sm:pb-4 flex justify-between items-start">
                             <div>
                                 <h3 className="text-xl font-bold text-white tracking-tight">
-                                    {editingTask ? 'Edit Objective' : 'New Sequence'}
+                                    {editingTask ? 'Edit Task' : 'Create Task'}
                                 </h3>
-                                <p className="text-[11px] text-white/30 font-bold uppercase tracking-widest mt-1">Configure task parameters</p>
+                                <p className="text-[11px] text-white/30 font-bold uppercase tracking-widest mt-1">Fill in the details below</p>
                             </div>
                             <button
                                 onClick={() => setShowForm(false)}
@@ -55,12 +55,12 @@ const TaskForm = ({
                                 />
 
                                 <div className="space-y-1.5">
-                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Documentation</label>
+                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest ml-1">Description</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         className="w-full px-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder-white/20 focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500/30 transition-all duration-300 min-h-[120px] resize-none"
-                                        placeholder="Provide sequence details..."
+                                        placeholder="Add more details about the task..."
                                         required
                                     />
                                 </div>
@@ -118,14 +118,14 @@ const TaskForm = ({
 
                                 <div className="flex gap-3 pt-4">
                                     <Button type="submit" className="flex-1 py-3 text-xs">
-                                        {editingTask ? 'Update Sequence' : 'Initialize Task'}
+                                        {editingTask ? 'Save Changes' : 'Create Task'}
                                     </Button>
                                     <button
                                         type="button"
                                         onClick={() => setShowForm(false)}
                                         className="px-6 py-3 rounded-xl bg-white/5 text-white/50 font-bold uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/10 transition-all"
                                     >
-                                        Abort
+                                        Cancel
                                     </button>
                                 </div>
                             </form>

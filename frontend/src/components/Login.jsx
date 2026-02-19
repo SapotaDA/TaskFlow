@@ -83,11 +83,11 @@ const Login = () => {
             </div>
 
             <h2 className="text-5xl font-bold text-white tracking-tighter leading-none mb-6">
-              Accelerate your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">productivity engine.</span>
+              Work smarter, <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">not harder.</span>
             </h2>
             <p className="text-lg text-white/30 max-w-md font-medium leading-relaxed">
-              Clinical task management for modern teams who demand surgical precision in their workflows.
+              Organize your tasks efficiently with our simple and powerful dashboard.
             </p>
           </div>
 

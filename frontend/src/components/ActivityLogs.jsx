@@ -76,11 +76,11 @@ const ActivityLogs = () => {
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Security Protocol</span>
+                            <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">History</span>
                         </div>
-                        <h1 className="text-4xl font-bold text-white tracking-tight">Audit History</h1>
+                        <h1 className="text-4xl font-bold text-white tracking-tight">Recent Activity</h1>
                         <p className="text-white/40 text-sm mt-2 max-w-md leading-relaxed">
-                            Permanent record of all synchronized actions and system maneuvers.
+                            A simple record of all actions taken on your account.
                         </p>
                     </div>
 
@@ -148,8 +148,8 @@ const ActivityLogs = () => {
                             <div className="w-16 h-16 bg-white/[0.02] rounded-2xl flex items-center justify-center mx-auto mb-6">
                                 <Shield className="w-8 h-8 text-white/5" />
                             </div>
-                            <h3 className="text-white font-bold text-lg">No synchronized logs found</h3>
-                            <p className="text-white/20 text-xs mt-1 max-w-xs mx-auto uppercase tracking-widest leading-loose">The record is clean. Protocol execution has not been initiated.</p>
+                            <h3 className="text-white font-bold text-lg">No activity recorded yet</h3>
+                            <p className="text-white/20 text-xs mt-1 max-w-xs mx-auto uppercase tracking-widest leading-loose">Your history is currently empty.</p>
                         </div>
                     )}
                 </div>

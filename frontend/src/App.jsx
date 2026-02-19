@@ -9,7 +9,7 @@ const lazyRetry = (componentImport) => {
     try {
       return await componentImport();
     } catch (error) {
-      console.error('Sequence Mismatch: Dynamic module fetch failed. Re-synchronizing node...', error);
+      console.error('Connection Error: Refreshing page...', error);
       // Only reload once to prevent infinite loops
       const hasReloaded = window.localStorage.getItem('sync_retry_active');
       if (!hasReloaded) {
@@ -120,8 +120,8 @@ function App() {
             className="w-12 h-12 border-2 border-white/10 border-t-white rounded-2xl shadow-2xl mb-8"
           />
           <div className="text-center">
-            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] animate-pulse">Initializing_Sync</h2>
-            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mt-2">Connecting to secure node...</p>
+            <h2 className="text-sm font-black text-white uppercase tracking-[0.4em] animate-pulse">Loading App</h2>
+            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest mt-2">Connecting to server...</p>
           </div>
         </div>
       </div>
