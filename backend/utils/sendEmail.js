@@ -4,16 +4,22 @@ const sendEmail = async (options) => {
     // Use 'service: gmail' which handles host/port automatically
     const transporterConfig = {
         host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // use SSL
+        port: 587,
+        secure: false, // use TLS
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
+        tls: {
+            // Do not fail on invalid certs
+            rejectUnauthorized: false,
+            // Google often requires this explicitly
+            requireTLS: true
+        },
         family: 4, // Force IPv4 to prevent connection issues on platforms like Render
-        connectionTimeout: 30000, // 30 seconds
-        greetingTimeout: 30000,
-        socketTimeout: 45000,
+        connectionTimeout: 40000,
+        greetingTimeout: 40000,
+        socketTimeout: 60000,
         debug: true,
         logger: true
     };

@@ -104,15 +104,6 @@ router.post('/forgot-password', passwordResetLimiter, [
     const message = `You are receiving this email because you requested a password reset. Please click: \n\n ${resetUrl}`;
 
     try {
-      // DEV SIMULATION MODE
-      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
-        console.log('--- DEV SIMULATION: EMAIL RESET LINK ---');
-        console.log(`To: ${user.email}`);
-        console.log(`Link: ${resetUrl}`);
-        console.log('----------------------------------------');
-        return res.json({ message: 'DEV MODE: Reset link logged to server console' });
-      }
-
       const emailHtml = getNotificationTemplate(
         'Password Reset Protocol',
         `Hello ${user.name}, we received a request to synchronize your security credentials. Click the button below to initialize the password reset sequence.`,
@@ -163,16 +154,6 @@ router.post('/send-otp-email', passwordResetLimiter, [
     await user.save();
 
     try {
-      // Send OTP via email (DEV SIMULATION MODE)
-      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
-        console.log('\n=== DEV SIMULATION: EMAIL OTP ===');
-        console.log(`To: ${user.email}`);
-        console.log(`OTP: ${otp}`);
-        console.log(`Expires: 10 minutes`);
-        console.log('===================================\n');
-        return res.json({ message: 'DEV MODE: OTP logged to server console' });
-      }
-
       const emailHtml = getNotificationTemplate(
         'Verification OTP',
         `Hello ${user.name}, your TaskFlow security code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>. This code is valid for 10 minutes. Use it to finalize your session validation.`,
@@ -348,34 +329,18 @@ router.put('/me', auth, [
       user.newEmailOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
       emailChangePending = true;
 
-      // DEV SIMULATION FOR EMAIL CHANGE
-      if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
-        console.log('\n=== DEV SIMULATION: EMAIL CHANGE OTP ===');
-        console.log(`To: ${email}`);
-        console.log(`OTP: ${otp}`);
-        console.log('==========================================\n');
-      } else {
-        try {
-          const emailHtml = getNotificationTemplate(
-            'Email Change Verification',
-            `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
-            '#',
-            'Verify in App'
-          );
+      const emailHtml = getNotificationTemplate(
+        'Email Change Verification',
+        `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
+        '#',
+        'Verify in App'
+      );
 
-          await sendEmail({
-            email: email, // Send to new email
-            subject: 'Verify New Email Address - TaskFlow',
-            html: emailHtml
-          });
-        } catch (err) {
-          console.error('Email change OTP failed:', err.message);
-          return res.status(500).json({
-            message: 'Email Configuration Error',
-            error: `SMTP_DIAGNOSTIC: ${err.message}. (User: ${process.env.EMAIL_USER})`
-          });
-        }
-      }
+      await sendEmail({
+        email: email, // Send to new email
+        subject: 'Verify New Email Address - TaskFlow',
+        html: emailHtml
+      });
     }
 
     await user.save();

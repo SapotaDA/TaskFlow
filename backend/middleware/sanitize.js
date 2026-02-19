@@ -18,8 +18,8 @@ const sanitize = (req, res, next) => {
     // Sanitize string inputs against XSS
     const sanitizeObject = (obj) => {
       if (typeof obj === 'string') {
-        // SKIP sanitization for large base64 image strings (performance & 500 error fix)
-        if (obj.startsWith('data:image/') || obj.length > 50000) {
+        // SKIP sanitization for base64 images and large data payloads (performance & corruption fix)
+        if (obj.startsWith('data:image/') || obj.includes(';base64,') || obj.length > 10000) {
           return obj;
         }
         return xss(obj);
