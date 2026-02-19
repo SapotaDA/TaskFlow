@@ -329,18 +329,30 @@ router.put('/me', auth, [
       user.newEmailOtpExpire = Date.now() + 10 * 60 * 1000; // 10 min
       emailChangePending = true;
 
-      const emailHtml = getNotificationTemplate(
-        'Email Change Verification',
-        `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
-        '#',
-        'Verify in App'
-      );
+      try {
+        const emailHtml = getNotificationTemplate(
+          'Email Change Verification',
+          `Hello ${user.name}, you requested to change your network address to this email. Your verification code is: <strong style="color: #3b82f6; font-size: 24px;">${otp}</strong>.`,
+          '#',
+          'Verify in App'
+        );
 
-      await sendEmail({
-        email: email, // Send to new email
-        subject: 'Verify New Email Address - TaskFlow',
-        html: emailHtml
-      });
+        await sendEmail({
+          email: email, // Send to new email
+          subject: 'Verify New Email Address - TaskFlow',
+          html: emailHtml
+        });
+      } catch (emailErr) {
+        console.error('Email change OTP failure:', emailErr.message);
+        // We still save the name change, but inform the user the email verification failed
+        await user.save();
+        return res.status(200).json({
+          message: 'Profile name updated, but email verification code failed to send.',
+          emailChangePending: false, // Reset this since sending failed
+          warning: `SMTP_ISSUE: ${emailErr.message}`,
+          user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture }
+        });
+      }
     }
 
     await user.save();
@@ -351,7 +363,7 @@ router.put('/me', auth, [
       user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture }
     });
   } catch (error) {
-    console.error('Update Profile Error:', error.message);
+    console.error('Update Profile Fatal Error:', error);
     res.status(500).json({
       message: 'System Transaction Failed',
       error: `GENERIC_FAULT: ${error.message}`

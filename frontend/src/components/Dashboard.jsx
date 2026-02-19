@@ -94,14 +94,31 @@ const Dashboard = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Initial Load
+  // Initial Load - Only run once on mount
   useEffect(() => {
+    let isMounted = true;
+
     const init = async () => {
       setLoading(true);
-      await Promise.all([fetchTasks(), fetchStats()]);
+      try {
+        await Promise.all([fetchTasks(), fetchStats()]);
+      } catch (err) {
+        console.error('Initialization error:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
+
     init();
-  }, [fetchTasks, fetchStats]);
+    return () => { isMounted = false; };
+  }, []); // Remove dependencies to prevent re-initializing on every stat change
+
+  // Refetch stats when range changes, without global loading
+  useEffect(() => {
+    if (!loading) {
+      fetchStats();
+    }
+  }, [analyticsRange, fetchStats]);
 
   // Handlers
   const handleSubmit = useCallback(async (e) => {

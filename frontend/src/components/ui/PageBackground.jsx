@@ -31,7 +31,7 @@ const PageBackground = ({
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className={`absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] ${blob1} rounded-full blur-[150px]`}
+          className={`absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] ${blob1} rounded-full blur-[60px]`}
         />
         <motion.div
           animate={{
@@ -44,7 +44,7 @@ const PageBackground = ({
             ease: "easeInOut",
             delay: 2
           }}
-          className={`absolute -bottom-[20%] -right-[10%] w-[70vw] h-[70vw] ${blob2} rounded-full blur-[200px]`}
+          className={`absolute -bottom-[20%] -right-[10%] w-[70vw] h-[70vw] ${blob2} rounded-full blur-[80px]`}
         />
       </div>
 
