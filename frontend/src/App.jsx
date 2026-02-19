@@ -3,14 +3,33 @@ import { useContext, lazy, Suspense } from 'react';
 import { AuthContext } from './context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
-// Lazy load components for performance
-const Login = lazy(() => import('./components/Login'));
-const Register = lazy(() => import('./components/Register'));
-const Dashboard = lazy(() => import('./components/Dashboard'));
-const Profile = lazy(() => import('./components/Profile'));
-const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
-const ResetPassword = lazy(() => import('./components/ResetPassword'));
-const ActivityLogs = lazy(() => import('./components/ActivityLogs'));
+// Helper to handle ChunkLoadError/MIME errors after new deployments
+const lazyRetry = (componentImport) => {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      console.error('Sequence Mismatch: Dynamic module fetch failed. Re-synchronizing node...', error);
+      // Only reload once to prevent infinite loops
+      const hasReloaded = window.localStorage.getItem('sync_retry_active');
+      if (!hasReloaded) {
+        window.localStorage.setItem('sync_retry_active', 'true');
+        window.location.reload();
+        return;
+      }
+      throw error;
+    }
+  });
+};
+
+// Lazy load components with error recovery
+const Login = lazyRetry(() => import('./components/Login'));
+const Register = lazyRetry(() => import('./components/Register'));
+const Dashboard = lazyRetry(() => import('./components/Dashboard'));
+const Profile = lazyRetry(() => import('./components/Profile'));
+const ForgotPassword = lazyRetry(() => import('./components/ForgotPassword'));
+const ResetPassword = lazyRetry(() => import('./components/ResetPassword'));
+const ActivityLogs = lazyRetry(() => import('./components/ActivityLogs'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -77,6 +96,11 @@ const AnimatedRoutes = () => {
 
 function App() {
   const { loading } = useContext(AuthContext);
+
+  // Clear sync retry flag on successful mount
+  useEffect(() => {
+    window.localStorage.removeItem('sync_retry_active');
+  }, []);
 
   if (loading) {
     return (
