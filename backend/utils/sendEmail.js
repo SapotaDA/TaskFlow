@@ -7,21 +7,21 @@ const sendEmail = async (options) => {
 
     const transporterConfig = {
         host: 'smtp.gmail.com',
-        port: 587, // Use port 587 for STARTTLS
-        secure: false, // Use STARTTLS, so secure is false
-        requireTLS: true, // Explicitly require STARTTLS
+        port: 465,
+        secure: true, // Use SSL/TLS directly (SMTPS)
         auth: {
             user: emailUser,
             pass: emailPass,
-            authMethod: 'LOGIN' // Explicit authMethod
         },
         tls: {
             rejectUnauthorized: false,
+            // Ensure no IPv6 fallback during handshake
+            servername: 'smtp.gmail.com'
         },
-        family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
+        family: 4, // Force IPv4 (Critical for Render/Cloud networks)
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
         debug: true,
         logger: true
     };
