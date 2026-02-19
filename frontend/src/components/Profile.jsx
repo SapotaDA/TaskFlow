@@ -217,7 +217,7 @@ const Profile = () => {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto pt-32 pb-20 px-6">
+      <main className="max-w-4xl mx-auto pt-32 pb-20 px-4 sm:px-6">
         <header className="mb-12">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />
@@ -228,7 +228,7 @@ const Profile = () => {
 
         <div className="grid grid-cols-1 gap-8">
           {/* Identity Card */}
-          <section className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden group">
+          <section className="p-6 sm:p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl relative overflow-hidden group">
             <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
               <div className="relative group/avatar">
                 <input
@@ -397,7 +397,7 @@ const Profile = () => {
 
           {/* Security & Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section className="p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl flex flex-col justify-between">
+            <section className="p-6 sm:p-8 rounded-2xl bg-white/[0.01] border border-white/5 backdrop-blur-3xl flex flex-col justify-between">
               <div>
                 <h4 className="text-lg font-bold text-white mb-2 tracking-tight">Account Actions</h4>
                 <p className="text-xs text-white/30 leading-relaxed mb-8">Sign out of your account on this device.</p>
@@ -407,7 +407,7 @@ const Profile = () => {
               </Button>
             </section>
 
-            <section className="p-8 rounded-2xl bg-red-500/[0.01] border border-red-500/10 backdrop-blur-3xl flex flex-col justify-between group hover:border-red-500/20 transition-all">
+            <section className="p-6 sm:p-8 rounded-2xl bg-red-500/[0.01] border border-red-500/10 backdrop-blur-3xl flex flex-col justify-between group hover:border-red-500/20 transition-all">
               <div>
                 <h4 className="text-lg font-bold text-red-400 mb-2 tracking-tight">Delete Account</h4>
                 <p className="text-xs text-red-400/30 leading-relaxed mb-8">Permanently delete your account and all data. This action cannot be undone.</p>

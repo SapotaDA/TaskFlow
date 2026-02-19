@@ -22,7 +22,7 @@ const StatCard = React.memo(({ title, value, icon: Icon, colorClass }) => {
 
 const StatCards = ({ stats }) => {
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard title="Total Tasks" value={stats?.total || 0} icon={Clipboard} colorClass="text-blue-400" />
             <StatCard title="Active" value={stats?.inProgress || 0} icon={Clock} colorClass="text-amber-400" />
             <StatCard title="Completed" value={stats?.completed || 0} icon={CheckCircle2} colorClass="text-emerald-400" />

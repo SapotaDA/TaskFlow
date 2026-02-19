@@ -205,13 +205,13 @@ const Dashboard = () => {
       blob3="bg-slate-700/5"
     >
       <nav className="fixed top-0 left-0 right-0 z-[100] backdrop-blur-2xl bg-[#020305]/80 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2.5 group cursor-pointer" onClick={() => navigate('/dashboard')}>
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
                 <span className="text-slate-950 font-black text-xs">TF</span>
               </div>
-              <span className="text-white font-bold text-lg tracking-tight">TaskFlow</span>
+              <span className="hidden xs:inline text-white font-bold text-lg tracking-tight">TaskFlow</span>
             </div>
           </div>
 
@@ -245,7 +245,7 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      <main className="relative z-10 max-w-7xl mx-auto pt-24 pb-16 px-6">
+      <main className="relative z-10 max-w-7xl mx-auto pt-24 pb-16 px-4 sm:px-6">
         {/* Superior Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
           <div>
