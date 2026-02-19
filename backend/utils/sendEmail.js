@@ -39,10 +39,10 @@ const sendEmail = async (options) => {
     // Send the email with a generous internal timeout (30 seconds)
     try {
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('SERVER_MAIL_TIMEOUT: Google is taking too long (30s+). Check your Render firewall or Gmail settings.')), 30000)
+            setTimeout(() => reject(new Error('SERVER_MAIL_TIMEOUT: Handshake with Gmail took over 50s. MANUAL FIX REQUIRED: Ensure you have 2-Step Verification ON and are using a 16-character APP PASSWORD, not your regular Gmail password.')), 50000)
         );
 
-        // Race the email sending against a 30-second timeout
+        // Race the email sending against a 50-second timeout
         await Promise.race([
             transporter.sendMail(mailOptions),
             timeoutPromise

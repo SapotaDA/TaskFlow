@@ -441,16 +441,6 @@ router.post('/delete-account-otp', auth, async (req, res) => {
     const otp = user.getOTP();
     await user.save();
 
-    // DEV SIMULATION MODE
-    if (process.env.EMAIL_USER === 'your-email@gmail.com' || process.env.EMAIL_PASS === 'your-app-password') {
-      console.log('\n=== DEV SIMULATION: DELETE ACCOUNT OTP ===');
-      console.log(`To: ${user.email}`);
-      console.log(`OTP: ${otp}`);
-      console.log(`Expires: 10 minutes`);
-      console.log('==========================================\n');
-      return res.json({ message: 'DEV MODE: OTP logged to server console' });
-    }
-
     const emailHtml = getNotificationTemplate(
       'Account Deletion Alert',
       `Hello ${user.name}, you are attempting to permanently erase your TaskFlow account. Your verification code is: <strong style="color: #ef4444; font-size: 24px;">${otp}</strong>. This action is IRREVERSIBLE.`,
