@@ -14,7 +14,10 @@ import ConfirmModal from './ui/ConfirmModal';
 import FeedbackCard from './ui/FeedbackCard';
 import ImageCropperModal from './ImageCropperModal';
 
+import { useToast } from '../context/ToastContext';
+
 const Profile = () => {
+  const toast = useToast();
   const navigate = useNavigate();
   const { user, updateProfile, updateProfilePicture, logout } = useContext(AuthContext);
   const fileInputRef = useRef(null);
@@ -22,8 +25,6 @@ const Profile = () => {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '' });
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -31,8 +32,6 @@ const Profile = () => {
   const [deleteStep, setDeleteStep] = useState('confirm');
   const [deleteOtp, setDeleteOtp] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteError, setDeleteError] = useState('');
-  const [deleteSuccess, setDeleteSuccess] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [hideEmail, setHideEmail] = useState(true);
 
@@ -83,15 +82,12 @@ const Profile = () => {
   const handleCropComplete = async (croppedImage) => {
     setShowCropper(false);
     setUploading(true);
-    setError('');
-
     try {
       await updateProfilePicture(croppedImage);
-      setSuccess('Profile picture updated!');
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success('Visual identity synchronized.');
     } catch (err) {
       console.error('Upload Error:', err);
-      setError(err.response?.data?.message || 'Failed to sync image to server');
+      toast.error(err.response?.data?.message || 'Failed to sync image to server');
     } finally {
       setUploading(false);
       setSelectedImage(null);
@@ -112,18 +108,15 @@ const Profile = () => {
     e.preventDefault();
     if (deleteLoading) return;
 
-    setDeleteLoading(true);
-    setDeleteError('');
-
     try {
       await api.post('/auth/delete-account', { otp: deleteOtp });
-      setDeleteSuccess('Account purged. Session terminating...');
+      toast.success('Account purged. Session terminating.');
       setTimeout(() => {
         logout();
         navigate('/register');
       }, 2000);
     } catch (err) {
-      setDeleteError(err?.response?.data?.message || 'Invalid verification sequence.');
+      toast.error(err?.response?.data?.message || 'Invalid verification sequence.');
     } finally {
       setDeleteLoading(false);
     }
@@ -134,26 +127,19 @@ const Profile = () => {
     if (loading) return;
 
     setLoading(true);
-    setError('');
-    setSuccess('');
 
     try {
       const data = await updateProfile(formData);
 
       if (data.emailChangePending) {
-        setSuccess('Profile updated. Verification required for new email address.');
+        toast.info('Parameters saved. Email verification required.');
         setVerifyEmailStep(true);
       } else {
-        setSuccess('Identity parameters updated successfully.');
-        setTimeout(() => setSuccess(''), 4000);
+        toast.success('Identity parameters updated successfully.');
         setEditing(false);
       }
     } catch (err) {
-      console.error('Update Profile Error Details:', err);
-      // Show more specific error if available
-      const backendError = err?.response?.data?.error;
-      const errorMessage = backendError ? `Sequence Error: ${backendError}` : (err?.response?.data?.message || err.message || 'Update failed: Authorization rejected.');
-      setError(errorMessage);
+      toast.error(err.response?.data?.message || 'Update failed: Check input parameters.');
     } finally {
       setLoading(false);
     }
@@ -163,18 +149,13 @@ const Profile = () => {
 
   const handleResendOtp = async () => {
     if (resendLoading) return;
-    setResendLoading(true);
-    setError('');
-    setSuccess('');
-
     try {
       // Re-triggering the profile update with the new email generates a new OTP
       await updateProfile(formData);
-      setSuccess('Verification code resent to your email.');
-      setTimeout(() => setSuccess(''), 4000);
+      toast.success('Verification code resent to your email.');
     } catch (err) {
       console.error('Resend OTP Error:', err);
-      setError(err?.response?.data?.message || 'Failed to resend code.');
+      toast.error(err?.response?.data?.message || 'Failed to resend code.');
     } finally {
       setResendLoading(false);
     }
@@ -182,34 +163,28 @@ const Profile = () => {
 
   const handleVerifyEmail = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-
     try {
       await api.post('/auth/verify-email-change', { otp: emailOtp.trim() });
       // Update local user context via profile refresh or manual set
       await updateProfile(formData); // Re-fetch or re-set user
-      setSuccess('Email address verified and updated successfully.');
+      toast.success('Email address verified and updated successfully.');
       setVerifyEmailStep(false);
       setEditing(false);
       setEmailOtp('');
     } catch (err) {
       console.error('Verify Email Error:', err);
-      setError(err?.response?.data?.message || 'Verification failed. Invalid or expired code.');
+      toast.error(err?.response?.data?.message || 'Verification failed. Invalid or expired code.');
     } finally {
       setLoading(false);
     }
   };
 
   const requestDeleteOtp = async () => {
-    setDeleteLoading(true);
-    setDeleteError('');
-    setDeleteStep('otp');
-
     try {
       await api.post('/auth/delete-account-otp');
+      toast.info('Security code dispatched to your email.');
     } catch (err) {
-      setDeleteError(err?.response?.data?.message || 'Verification sequence failed.');
+      toast.error(err?.response?.data?.message || 'Verification sequence failed.');
       setDeleteStep('confirm');
     } finally {
       setDeleteLoading(false);
@@ -413,16 +388,6 @@ const Profile = () => {
                   )}
                 </AnimatePresence>
 
-                {success && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> {success}
-                  </motion.div>
-                )}
-                {error && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 text-red-400 text-[10px] font-bold uppercase tracking-widest">
-                    <AlertCircle className="w-3.5 h-3.5" /> {error}
-                  </motion.div>
-                )}
               </div>
             </div>
 
@@ -461,7 +426,6 @@ const Profile = () => {
                     onChange={(e) => setDeleteOtp(e.target.value)}
                     required
                   />
-                  {deleteError && <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest">{deleteError}</p>}
                   <Button type="submit" variant="danger" isLoading={deleteLoading} className="w-full">Confirm Delete</Button>
                 </form>
               )}

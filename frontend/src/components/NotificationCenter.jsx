@@ -3,17 +3,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellOff, CheckCircle2, MoreHorizontal, Settings, X, Info } from 'lucide-react';
 import api from '../services/api';
 import NotificationItem from './ui/NotificationItem';
+import { useToast } from '../context/ToastContext';
 
 const NotificationCenter = () => {
+    const toast = useToast();
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const dropdownRef = useRef(null);
+    const knownNotificationIds = useRef(new Set());
+    const isFirstFetch = useRef(true);
 
     const fetchNotifications = async () => {
         try {
             const res = await api.get('/notifications');
-            setNotifications(res.data);
+            const newNotifications = res.data;
+
+            // Detect new notifications for toast alerts
+            if (!isFirstFetch.current) {
+                newNotifications.forEach(n => {
+                    if (!n.read && !knownNotificationIds.current.has(n._id)) {
+                        toast.info(`Protocol Alert: ${n.title}`);
+                    }
+                });
+            }
+
+            // Update known set
+            newNotifications.forEach(n => knownNotificationIds.current.add(n._id));
+            isFirstFetch.current = false;
+
+            setNotifications(newNotifications);
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }

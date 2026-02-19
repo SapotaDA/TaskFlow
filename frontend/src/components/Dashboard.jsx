@@ -18,11 +18,13 @@ import NotificationCenter from './NotificationCenter';
 import ConfirmModal from './ui/ConfirmModal';
 import FeedbackCard from './ui/FeedbackCard';
 import OnboardingTour from './ui/OnboardingTour';
+import { useToast } from '../context/ToastContext';
 
 // Lazy load ChartSection
 const ChartSection = lazy(() => import('./dashboard/ChartSection'));
 
 const Dashboard = () => {
+  const toast = useToast();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -126,8 +128,10 @@ const Dashboard = () => {
     try {
       if (editingTask) {
         await api.put(`/tasks/${editingTask._id}`, formData);
+        toast.success(`Objective "${formData.title}" synchronized.`);
       } else {
         await api.post('/tasks', formData);
+        toast.success(`New sequence "${formData.title}" initialized.`);
       }
       fetchTasks();
       fetchStats();
@@ -142,6 +146,7 @@ const Dashboard = () => {
       });
     } catch (error) {
       console.error('Error saving task:', error);
+      toast.error('Transaction failure: Sequence could not be saved.');
     }
   }, [editingTask, formData, fetchTasks, fetchStats]);
 
@@ -165,14 +170,16 @@ const Dashboard = () => {
   const confirmDelete = useCallback(async () => {
     try {
       await api.delete(`/tasks/${taskToDelete}`);
+      toast.success('Target neutralized: Data purged from node.');
       fetchTasks();
       fetchStats();
       setShowDeleteModal(false);
       setTaskToDelete(null);
     } catch (error) {
       console.error('Error deleting task:', error);
+      toast.error('Purge failure: Sequence aborted.');
     }
-  }, [taskToDelete, fetchTasks, fetchStats]);
+  }, [taskToDelete, fetchTasks, fetchStats, toast]);
 
   const confirmLogout = useCallback(() => {
     logout();
