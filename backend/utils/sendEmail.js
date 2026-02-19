@@ -3,16 +3,17 @@ const nodemailer = require('nodemailer');
 const sendEmail = async (options) => {
     // Use 'service: gmail' which handles host/port automatically
     const transporterConfig = {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // use SSL
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS?.replace(/\s/g, ''),
         },
-        family: 4, // Force IPv4 to prevent ENETUNREACH errors on Render
-        // Connection settings to prevent hangs
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 30000,
+        family: 4, // Force IPv4 to prevent connection issues on platforms like Render
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000,
+        socketTimeout: 45000,
         debug: true,
         logger: true
     };

@@ -195,7 +195,7 @@ const Dashboard = () => {
             <NotificationCenter />
             <div className="h-6 w-px bg-white/10" />
             <button onClick={() => navigate('/profile')} className="flex items-center gap-2.5 group px-2 py-1 rounded-lg hover:bg-white/5 transition-colors">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-lg overflow-hidden border border-white/10 group-hover:border-white/20 transition-all">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-lg overflow-hidden border border-white/10 group-hover:border-white/20 transition-all">
                 {user?.profilePicture ? (
                   <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
                 ) : (

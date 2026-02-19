@@ -38,7 +38,7 @@ router.post('/register', authLimiter, [
     await user.save();
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture } });
   } catch (error) {
     console.error('Register Error:', error.message);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -72,7 +72,7 @@ router.post('/login', authLimiter, [
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture } });
   } catch (error) {
     console.error('Login Error:', error.message);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -280,7 +280,7 @@ router.post('/reset-password', passwordResetLimiter, [
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user).select('-password');
-    res.json({ user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture } });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -383,7 +383,7 @@ router.put('/me', auth, [
     res.json({
       message: emailChangePending ? 'Profile updated. Verification required for new email.' : 'Profile updated successfully',
       emailChangePending,
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture }
     });
   } catch (error) {
     console.error('Update Profile Error:', error.message);
@@ -443,7 +443,7 @@ router.post('/verify-email-change', auth, [
 
     res.json({
       message: 'Email address updated successfully.',
-      user: { id: user._id, name: user.name, email: user.email }
+      user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture }
     });
   } catch (error) {
     console.error('Verify Email Change Error:', error);

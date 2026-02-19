@@ -21,6 +21,12 @@ const initDeadlineChecker = () => {
             }).populate('user', 'email name');
 
             for (const task of upcomingTasks) {
+                // Ensure task.user exists before proceeding (prevents TypeError: Cannot read properties of null)
+                if (!task.user) {
+                    console.log(`Skipping task ${task._id} as it has no associated user.`);
+                    continue;
+                }
+
                 // Check if a notification already exists for this task deadline (to avoid duplicates)
                 const existingNotification = await Notification.findOne({
                     user: task.user._id,

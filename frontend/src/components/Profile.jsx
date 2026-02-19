@@ -12,6 +12,7 @@ import {
 import api from '../services/api';
 import ConfirmModal from './ui/ConfirmModal';
 import FeedbackCard from './ui/FeedbackCard';
+import ImageCropperModal from './ImageCropperModal';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -35,6 +36,10 @@ const Profile = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [hideEmail, setHideEmail] = useState(true);
 
+  // Cropper State
+  const [showCropper, setShowCropper] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
   // Mask email safely
   const maskEmail = (email) => {
     if (!email) return '';
@@ -55,31 +60,42 @@ const Profile = () => {
     });
   }, [user, navigate]);
 
-  const handleImageChange = async (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be less than 5MB');
+    // Validate size (max 10MB for high-res inputs before cropping)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Original image must be less than 10MB');
       return;
     }
 
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      setUploading(true);
-      setError('');
-      try {
-        await updateProfilePicture(reader.result);
-        setSuccess('Profile picture updated!');
-        setTimeout(() => setSuccess(''), 3000);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to upload image');
-      } finally {
-        setUploading(false);
-      }
+    reader.onloadend = () => {
+      setSelectedImage(reader.result);
+      setShowCropper(true);
+      // Reset input so same file can be selected again
+      e.target.value = null;
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCropComplete = async (croppedImage) => {
+    setShowCropper(false);
+    setUploading(true);
+    setError('');
+
+    try {
+      await updateProfilePicture(croppedImage);
+      setSuccess('Profile picture updated!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      console.error('Upload Error:', err);
+      setError(err.response?.data?.message || 'Failed to sync image to server');
+    } finally {
+      setUploading(false);
+      setSelectedImage(null);
+    }
   };
 
   const handleChange = (e) => {
@@ -249,7 +265,7 @@ const Profile = () => {
                 />
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className={`w-28 h-28 rounded-3xl flex items-center justify-center relative overflow-hidden cursor-pointer transition-all duration-500 ${!user?.profilePicture ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-slate-900'} shadow-2xl border border-white/10 group-hover/avatar:scale-[1.02] group-hover/avatar:border-white/20`}
+                  className={`w-28 h-28 rounded-full flex items-center justify-center relative overflow-hidden cursor-pointer transition-all duration-500 ${!user?.profilePicture ? 'bg-gradient-to-br from-blue-500 to-indigo-600' : 'bg-slate-900'} shadow-2xl border border-white/10 group-hover/avatar:scale-[1.02] group-hover/avatar:border-white/20`}
                 >
                   {uploading ? (
                     <div className="absolute inset-0 bg-[#020305]/60 backdrop-blur-sm flex items-center justify-center z-20">
@@ -273,7 +289,7 @@ const Profile = () => {
                     </span>
                   )}
                 </div>
-                <div className="absolute -bottom-2 -right-2 p-2.5 bg-emerald-500 rounded-2xl border-4 border-[#020305] shadow-xl z-20">
+                <div className="absolute -bottom-1 -right-1 p-2 bg-emerald-500 rounded-full border-4 border-[#020305] shadow-xl z-20">
                   <ShieldCheck className="w-3.5 h-3.5 text-white" />
                 </div>
               </div>
@@ -481,7 +497,20 @@ const Profile = () => {
         confirmText="Sign Out"
         variant="danger"
       />
+      <AnimatePresence>
+        {showCropper && (
+          <ImageCropperModal
+            image={selectedImage}
+            onCropComplete={handleCropComplete}
+            onCancel={() => {
+              setShowCropper(false);
+              setSelectedImage(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </PageBackground>
+
   );
 };
 
