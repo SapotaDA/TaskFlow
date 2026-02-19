@@ -6,6 +6,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 const { getNotificationTemplate } = require('../utils/emailTemplates');
+const logActivity = require('../utils/logger');
 const { authLimiter, passwordResetLimiter } = require('../middleware/rateLimiter');
 
 
@@ -71,8 +72,14 @@ router.post('/login', authLimiter, [
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture } });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    // Log the activity
+    await logActivity(user._id, 'LOGIN_SUCCESS', `Session initiated for account: ${user.email}`);
+
+    res.json({
+      token, user: { id: user._id, name: user.name, email: user.email, profilePicture: user.profilePicture }
+    });
   } catch (error) {
     console.error('Login Error:', error.message);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -357,6 +364,9 @@ router.put('/me', auth, [
 
     await user.save();
 
+    // Log the activity
+    await logActivity(req.user, 'IDENTITY_SYNC', `Profile parameters modified: ${user.name}`);
+
     res.json({
       message: emailChangePending ? 'Profile updated. Verification required for new email.' : 'Profile updated successfully',
       emailChangePending,
@@ -441,6 +451,9 @@ router.post('/delete-account-otp', auth, async (req, res) => {
     const otp = user.getOTP();
     await user.save();
 
+    // Log the activity
+    await logActivity(req.user, 'DELETE_INITIALIZED', 'User requested verification code for account deletion.');
+
     const emailHtml = getNotificationTemplate(
       'Account Deletion Alert',
       `Hello ${user.name}, you are attempting to permanently erase your TaskFlow account. Your verification code is: <strong style="color: #ef4444; font-size: 24px;">${otp}</strong>. This action is IRREVERSIBLE.`,
@@ -480,6 +493,9 @@ router.post('/delete-account', auth, [
     if (user.otp !== otp || !user.otpExpire || user.otpExpire < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
+
+    // Log the activity (before deletion, while user object still exists)
+    await logActivity(req.user, 'ACCOUNT_PURGED', `Permanent account deletion executed: ${user.email}`);
 
     // Delete user account
     await User.findByIdAndDelete(req.user);

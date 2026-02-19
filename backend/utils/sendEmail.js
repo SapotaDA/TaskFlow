@@ -6,16 +6,13 @@ const sendEmail = async (options) => {
     const emailPass = (process.env.EMAIL_PASS || '').replace(/\s/g, '');
 
     const transporterConfig = {
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // use TLS
+        service: 'gmail',
         auth: {
             user: emailUser,
             pass: emailPass,
         },
         tls: {
             rejectUnauthorized: false,
-            requireTLS: true
         },
         family: 4,
         connectionTimeout: 20000,

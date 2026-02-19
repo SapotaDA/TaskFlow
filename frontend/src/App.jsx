@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('./components/Dashboard'));
 const Profile = lazy(() => import('./components/Profile'));
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
 const ResetPassword = lazy(() => import('./components/ResetPassword'));
+const ActivityLogs = lazy(() => import('./components/ActivityLogs'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -59,6 +60,10 @@ const AnimatedRoutes = () => {
           <Route
             path="/profile"
             element={user ? <Profile /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/activity-logs"
+            element={user ? <ActivityLogs /> : <Navigate to="/login" />}
           />
           <Route
             path="/"

@@ -4,6 +4,7 @@ const Task = require('../models/Task');
 const Notification = require('../models/Notification');
 const sendEmail = require('./sendEmail');
 const { getNotificationTemplate } = require('./emailTemplates');
+const logActivity = require('./logger');
 
 const checkUserActivity = () => {
     // Run every 15 minutes
@@ -57,6 +58,10 @@ const checkUserActivity = () => {
 
                     // 3. Mark as notified
                     user.inactivityNotifiedAt = Date.now();
+
+                    // Log the activity
+                    await logActivity(user._id, 'INACTIVITY_REMINDER', 'System dispatched inactivity reminder via email.');
+
                     await user.save();
 
                     console.log(`Inactivity notification dispatched to: ${user.email}`);

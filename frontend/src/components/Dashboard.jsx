@@ -217,6 +217,13 @@ const Dashboard = () => {
 
           <div className="flex items-center gap-4">
             <NotificationCenter />
+            <button
+              onClick={() => navigate('/activity-logs')}
+              className="p-2.5 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 border border-white/10 transition-all active:scale-95"
+              title="System Logs"
+            >
+              <Activity className="w-5 h-5" />
+            </button>
             <div className="h-6 w-px bg-white/10" />
             <button onClick={() => navigate('/profile')} className="flex items-center gap-2.5 group px-2 py-1 rounded-lg hover:bg-white/5 transition-colors">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow-lg overflow-hidden border border-white/10 group-hover:border-white/20 transition-all">

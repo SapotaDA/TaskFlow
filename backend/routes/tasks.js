@@ -7,6 +7,7 @@ const User = require('../models/User');
 const auth = require('../middleware/auth');
 const sendEmail = require('../utils/sendEmail');
 const { getNotificationTemplate } = require('../utils/emailTemplates');
+const logActivity = require('../utils/logger');
 
 const router = express.Router();
 
@@ -99,6 +100,9 @@ router.post('/', [
       }).catch(err => console.error('Email dispatch failed:', err));
     }
 
+    // Log the activity
+    await logActivity(req.user, 'TASK_INITIALIZED', `New objective registered: "${task.title}"`, { taskId: task._id });
+
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ message: 'Initialization failure: Sequence could not be saved' });
@@ -134,6 +138,9 @@ router.put('/:id', [
 
     await task.save();
 
+    // Log the activity
+    await logActivity(req.user, 'TASK_SYNCHRONIZED', `Objective updated: "${task.title}"`, { taskId: task._id, status: task.status });
+
     if (oldStatus !== 'completed' && task.status === 'completed') {
       const foundUser = await User.findById(req.user);
       if (foundUser?.email) {
@@ -167,6 +174,10 @@ router.delete('/:id', auth, async (req, res) => {
   try {
     const task = await Task.findOneAndDelete({ _id: req.params.id, user: req.user });
     if (!task) return res.status(404).json({ message: 'Target mismatch: Objective not found' });
+
+    // Log the activity
+    await logActivity(req.user, 'TASK_PURGED', `Objective deleted: "${task.title}"`);
+
     res.json({ message: 'Target neutralized: Data purged' });
   } catch (error) {
     res.status(500).json({ message: 'Purge failure: Deletion sequence aborted' });

@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const sendEmail = require('./sendEmail');
 const { getNotificationTemplate } = require('./emailTemplates');
+const logActivity = require('./logger');
 
 const initDeadlineChecker = () => {
     // Run every hour
@@ -44,6 +45,9 @@ const initDeadlineChecker = () => {
                         type: 'deadline',
                         relatedTask: task._id
                     });
+
+                    // Log the activity
+                    await logActivity(task.user._id, 'DEADLINE_PROTOCOL', `System flagged approaching deadline for: "${task.title}"`);
 
                     // Send email notification (DISABLED per user request for only 'complete' emails)
                     /*

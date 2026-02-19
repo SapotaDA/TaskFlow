@@ -5,6 +5,7 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
 const notificationRoutes = require('./routes/notifications');
+const activityRoutes = require('./routes/activities');
 const initDeadlineChecker = require('./utils/deadlineChecker');
 const initActivityChecker = require('./utils/activityChecker');
 
@@ -86,6 +87,7 @@ const path = require('path');
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/activities', activityRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

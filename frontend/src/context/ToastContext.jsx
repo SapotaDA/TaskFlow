@@ -18,11 +18,22 @@ const toastColors = {
   warning: 'bg-yellow-500/20 border-yellow-500/30 text-yellow-200',
 };
 
+// Embedded subtle ping sound (Base64)
+const PING_SOUND = "data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTlvT18AZFBkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRk=";
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
+  const audioRef = React.useRef(new Audio(PING_SOUND));
 
   const addToast = useCallback((message, type = 'info', duration = 4000) => {
     const id = Date.now();
+
+    // Play sound immediately
+    try {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => { }); // Catch browser auto-play blocks
+    } catch (e) { }
+
     setToasts((prev) => [...prev, { id, message, type }]);
 
     if (duration > 0) {
